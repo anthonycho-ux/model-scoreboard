@@ -79,7 +79,8 @@ const server = http.createServer(async (req, res) => {
       const cachedK = Number(url.searchParams.get('cached')) || 80;
       const freshK = Number(url.searchParams.get('fresh')) || 4;
       const outK = Number(url.searchParams.get('out')) || 4;
-      const rows = scoreboard(catalog, { cachedK, freshK, outK });
+      const metric = url.searchParams.get('metric') || 'intelligence';
+      const rows = scoreboard(catalog, { cachedK, freshK, outK, metric });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ count: rows.length, rows }));
     } catch (e) {

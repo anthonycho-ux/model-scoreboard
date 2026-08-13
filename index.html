@@ -27,36 +27,51 @@ tr.me td{background:rgba(216,176,106,.07)}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:14px;margin-bottom:14px}
 .note{color:var(--muted);font-size:11px;margin-top:12px;line-height:1.6}
 .verdict{background:rgba(111,220,155,.1);border:1px solid var(--green);border-radius:9px;padding:11px 14px;margin-bottom:14px;font-size:12px}.verdict b{color:var(--green)}
+.metric-desc{color:var(--muted);font-size:12px;margin-bottom:12px;line-height:1.6}
 </style></head><body><div class="wrap">
 <h1>Model Scoreboard</h1>
-<div class="sub">Intelligence per cost, from the live catalog. Judge a model in seconds.</div>
+<div class="sub">Pick your intelligence yardstick, rank models by intelligence over cost, judge in seconds.</div>
 <div class="bar">
+<span class="lbl">metric</span>
+<select id="metric">
+<option value="composite">composite index</option>
+<option value="intelligence" selected>intelligence index</option>
+<option value="coding">coding index</option>
+<option value="agentic">agentic index</option>
+</select>
 <span class="lbl">cache k</span><input type="range" id="cached" min="0" max="200" step="4" value="80"><span class="rv" id="cached-v">80k</span>
 <span class="lbl">fresh k</span><input type="range" id="fresh" min="0" max="64" step="1" value="4"><span class="rv" id="fresh-v">4k</span>
 <span class="lbl">out k</span><input type="range" id="out" min="0" max="64" step="1" value="4"><span class="rv" id="out-v">4k</span>
 <input type="text" id="q" placeholder="search">
-<select id="sort"><option value="ratio">sort intel/cost</option><option value="intel">sort intelligence</option><option value="cost">sort cost</option></select>
+<select id="sort"><option value="ratio">sort intel/cost</option><option value="intel">sort score</option><option value="cost">sort cost</option></select>
 <div class="tgl" id="reason-tgl"><button class="on" data-v="all">all</button><button data-v="yes">reason</button><button data-v="no">non</button></div>
 </div>
+<div class="metric-desc" id="mdesc"></div>
 <div class="verdict" id="verdict"></div>
 <div class="card">
 <div class="cnt" id="cnt" style="margin-bottom:8px"></div>
 <table><thead><tr>
-<th>rank</th><th>model</th><th class="num" onclick="setSort('intel')">intelligence</th><th class="num" onclick="setSort('cost')">cost/call</th><th class="num" onclick="setSort('ratio')">intel/cost</th><th class="num" onclick="setSort('ctx')">ctx</th>
+<th>rank</th><th>model</th><th class="num" onclick="setSort('intel')">score</th><th class="num" onclick="setSort('cost')">cost/call</th><th class="num" onclick="setSort('ratio')">score/cost</th><th class="num" onclick="setSort('ctx')">ctx</th>
 </tr></thead><tbody id="body"></tbody></table>
-<div class="note">Intelligence = artificial_analysis intelligence_index from the live catalog. Cost = per call at the token mix above, cache read priced in. Models without a benchmark intelligence score are excluded. No score is invented.</div>
+<div class="note" id="foot"></div>
 </div>
 </div>
 <script>
 const $=s=>document.querySelector(s);let ROWS=[];
 const fmtMoney=n=>'$'+(n<0.01?n.toFixed(4):n.toFixed(2));
 const fmtK=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':Math.round(n);
-async function load(){try{const c=$('#cached').value,f=$('#fresh').value,o=$('#out').value;const r=await fetch('/api/scoreboard?cached='+c+'&fresh='+f+'&out='+o);if(!r.ok)throw 0;const d=await r.json();ROWS=d.rows||[];render();}catch(e){$('#body').innerHTML='<tr><td colspan=6 class="note">failed to load</td></tr>';}}
+const DESC={
+ composite:'Composite index: the mean of the intelligence, coding, and agentic sub-indices, one balanced number. Requires all three scores, so the field is the narrowest but most rounded.',
+ intelligence:'Artificial Analysis Intelligence Index: weighted average of nine evals across agents, coding, scientific reasoning, and general. The flagship overall capability score.',
+ coding:'Artificial Analysis Coding Index: how well a model writes and fixes code. Higher than the intelligence index on most coding models.',
+ agentic:'Artificial Analysis Agentic Index: how well a model carries out long-horizon agent tasks with tools. The most task-relevant for autonomous work.'
+};
+async function load(){try{const c=$('#cached').value,f=$('#fresh').value,o=$('#out').value,m=$('#metric').value;const r=await fetch('/api/scoreboard?cached='+c+'&fresh='+f+'&out='+o+'&metric='+m);if(!r.ok)throw 0;const d=await r.json();ROWS=d.rows||[];render();}catch(e){$('#body').innerHTML='<tr><td colspan=6 class="note">failed to load</td></tr>';}}
 let sortKey='ratio';
 function setSort(k){sortKey=k;render();}
 function filtered(){const q=($('#q').value||'').toLowerCase();const rv=document.querySelector('#reason-tgl button.on').dataset.v;return ROWS.filter(m=>{if(q&&!(m.id||'').toLowerCase().includes(q)&&!(m.name||'').toLowerCase().includes(q))return false;if(rv==='yes'&&!m.reasoning)return false;if(rv==='no'&&m.reasoning)return false;return true;});}
-function render(){const rows=filtered().slice();rows.sort((a,b)=>{if(sortKey==='ratio'){const ar=a.ratio==null?-1:a.ratio,br=b.ratio==null?-1:b.ratio;return br-ar;}if(sortKey==='intel')return b.intelligence-a.intelligence;if(sortKey==='cost')return a.cost-b.cost;if(sortKey==='ctx')return b.ctx-a.ctx;return 0;});$('#cnt').textContent=rows.length+' of '+ROWS.length+' scored models';const maxIntel=Math.max(...rows.map(r=>r.intelligence).filter(n=>!isNaN(n)),1);let h='';rows.forEach((r,i)=>{const isMe=r.id==='deepseek/deepseek-v4-flash-0731';const ratioText=r.ratio==null?'<span class="note">free</span>':r.ratio.toLocaleString(undefined,{maximumFractionDigits:0});const barW=Math.max(6,(r.intelligence/maxIntel)*100);const tags=(isMe?'<span class="tag me">yours</span>':'')+(r.free?'<span class="tag free">free</span>':'');h+='<tr class="'+(isMe?'me':'')+'"><td class="num" style="color:var(--muted)">'+(i+1)+'</td><td class="mono">'+r.id.split('/').pop()+tags+'</td><td class="num"><div class="score-col"><div class="score-bar" style="width:'+barW+'%"></div>'+r.intelligence.toFixed(1)+'</div></td><td class="num">'+fmtMoney(r.cost)+'</td><td class="num '+(r.ratio!=null&&r.ratio>10000?'ratio':'ratio-w')+'">'+ratioText+'</td><td class="num">'+fmtK(r.ctx)+'</td></tr>';});$('#body').innerHTML=h;const me=rows.find(r=>r.id==='deepseek/deepseek-v4-flash-0731');if(me){const rText=me.ratio!=null?me.ratio.toLocaleString(undefined,{maximumFractionDigits:0}):'free';$('#verdict').innerHTML='<b>Your model: '+me.id.split('/').pop()+'</b> — intelligence '+me.intelligence.toFixed(1)+', cost '+fmtMoney(me.cost)+'/call, intel/cost '+rText+'. Ranked against '+rows.length+' scored models in this view.';}else{$('#verdict').innerHTML='';}}
-$('#cached').addEventListener('input',()=>{$('#cached-v').textContent=Math.round($('#cached').value)+'k';load();});
+function render(){$('#mdesc').textContent=DESC[$('#metric').value]||'';const rows=filtered().slice();rows.sort((a,b)=>{if(sortKey==='ratio'){const ar=a.ratio==null?-1:a.ratio,br=b.ratio==null?-1:b.ratio;return br-ar;}if(sortKey==='intel')return b.score-a.score;if(sortKey==='cost')return a.cost-b.cost;if(sortKey==='ctx')return b.ctx-a.ctx;return 0;});$('#cnt').textContent=rows.length+' of '+ROWS.length+' scored';const maxSc=Math.max(...rows.map(r=>r.score).filter(n=>!isNaN(n)),1);let h='';rows.forEach((r,i)=>{const isMe=r.id==='deepseek/deepseek-v4-flash-0731';const ratioText=r.ratio==null?'<span class="note">free</span>':r.ratio.toLocaleString(undefined,{maximumFractionDigits:0});const barW=Math.max(6,(r.score/maxSc)*100);const tags=(isMe?'<span class="tag me">yours</span>':'')+(r.free?'<span class="tag free">free</span>':'');h+='<tr class="'+(isMe?'me':'')+'"><td class="num" style="color:var(--muted)">'+(i+1)+'</td><td class="mono">'+r.id.split('/').pop()+tags+'</td><td class="num"><div class="score-col"><div class="score-bar" style="width:'+barW+'%"></div>'+r.score.toFixed(1)+'</div></td><td class="num">'+fmtMoney(r.cost)+'</td><td class="num '+(r.ratio!=null&&r.ratio>10000?'ratio':'ratio-w')+'">'+ratioText+'</td><td class="num">'+fmtK(r.ctx)+'</td></tr>';});$('#body').innerHTML=h;const me=rows.find(r=>r.id==='deepseek/deepseek-v4-flash-0731');if(me){const rText=me.ratio!=null?me.ratio.toLocaleString(undefined,{maximumFractionDigits:0}):'free';$('#verdict').innerHTML='<b>Your model: '+me.id.split('/').pop()+'</b> — score '+me.score.toFixed(1)+' on '+$('#metric').value+', cost '+fmtMoney(me.cost)+'/call, score/cost '+rText+'. Ranked against '+rows.length+' scored models.';}else{$('#verdict').innerHTML='';}}
+$('#metric').addEventListener('change',load);$('#cached').addEventListener('input',()=>{$('#cached-v').textContent=Math.round($('#cached').value)+'k';load();});
 $('#fresh').addEventListener('input',()=>{$('#fresh-v').textContent=Math.round($('#fresh').value)+'k';load();});
 $('#out').addEventListener('input',()=>{$('#out-v').textContent=Math.round($('#out').value)+'k';load();});
 $('#q').addEventListener('input',render);$('#sort').addEventListener('change',e=>setSort(e.target.value));

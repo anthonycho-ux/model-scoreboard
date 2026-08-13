@@ -1,17 +1,41 @@
 // scoreboard.mjs - intelligence-per-cost ranking from the live catalog.
-// Uses the catalog's artificial_analysis intelligence_index as the intelligence
-// score, and the model's real per-call cost at the given token mix. No score is
-// invented; models without a benchmark intelligence index are excluded.
+// Uses the catalog's artificial_analysis benchmark family (intelligence_index,
+// coding_index, agentic_index) as selectable intelligence scores, and the
+// model's real per-call cost at the given token mix. No score is invented;
+// models without a benchmark score for the selected metric are excluded.
+//
+// metrics map: which sub-score to rank on. 'composite' blends the three AA
+// sub-indices into a single 0-100 score (balanced weights, only models that
+// have all three).
 
 const oneM = n => n == null ? null : (Number(n) * 1e6);
+
+const METRICS = {
+  intelligence: m => m.benchmarks?.artificial_analysis?.intelligence_index,
+  coding: m => m.benchmarks?.artificial_analysis?.coding_index,
+  agentic: m => m.benchmarks?.artificial_analysis?.agentic_index,
+};
+
+export function scoreMetric(m, metric) {
+  if (metric === 'composite') {
+    const aa = m.benchmarks?.artificial_analysis;
+    if (!aa) return null;
+    const v = [aa.intelligence_index, aa.coding_index, aa.agentic_index];
+    if (v.some(x => x == null)) return null;
+    return v.reduce((a, b) => a + b, 0) / 3;
+  }
+  const fn = METRICS[metric] || METRICS.intelligence;
+  return fn(m);
+}
 
 export function scoreboard(catalog, opts = {}) {
   const cachedK = opts.cachedK ?? 80;
   const freshK = opts.freshK ?? 4;
   const outK = opts.outK ?? 4;
+  const metric = opts.metric || 'intelligence';
   const rows = catalog.map(m => {
-    const b = m.benchmarks?.artificial_analysis;
-    if (!b || b.intelligence_index == null) return null;
+    const score = scoreMetric(m, metric);
+    if (score == null) return null;
     const p = m.pricing || {};
     const cr = oneM(p.input_cache_read);
     const pr = oneM(p.prompt);
@@ -22,10 +46,13 @@ export function scoreboard(catalog, opts = {}) {
     return {
       id: m.id,
       name: m.name,
-      intelligence: b.intelligence_index,
-      coding: b.coding_index ?? null,
+      metric,
+      intelligence: m.benchmarks?.artificial_analysis?.intelligence_index ?? null,
+      coding: m.benchmarks?.artificial_analysis?.coding_index ?? null,
+      agentic: m.benchmarks?.artificial_analysis?.agentic_index ?? null,
+      score,
       cost,
-      ratio: free ? null : (b.intelligence_index / cost),
+      ratio: free ? null : (score / cost),
       ctx: m.context_length || 0,
       reasoning: !!m.reasoning,
       cacheRead: cr,
@@ -34,3 +61,4 @@ export function scoreboard(catalog, opts = {}) {
   }).filter(Boolean);
   return rows;
 }
+
