@@ -28,9 +28,34 @@ tr.me td{background:rgba(216,176,106,.07)}
 .note{color:var(--muted);font-size:11px;margin-top:12px;line-height:1.6}
 .verdict{background:rgba(111,220,155,.1);border:1px solid var(--green);border-radius:9px;padding:11px 14px;margin-bottom:14px;font-size:12px}.verdict b{color:var(--green)}
 .metric-desc{color:var(--muted);font-size:12px;margin-bottom:12px;line-height:1.6}
+.routing{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:12px;flex-wrap:wrap}
+.routing .lbl{color:var(--muted)}.routing .cur{color:var(--amber);font-weight:600;font-family:ui-monospace,Menlo,monospace}
+.routing .pend{color:var(--blue);font-weight:600;font-family:ui-monospace,Menlo,monospace}
+.btn{border:none;border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+.btn:hover{color:var(--text)}
+.btn.apply{background:rgba(59,109,240,.16);color:var(--blue);border-color:var(--blue)}
+.btn.apply:hover{background:var(--blue);color:#fff}
+.btn.ok{background:rgba(111,220,155,.16);color:var(--green);border-color:var(--green);padding:7px 14px;font-size:12px}
+.btn.ok:hover{background:var(--green);color:#14171c}
+.btn.no{background:transparent;color:var(--muted);border-color:var(--line);padding:7px 14px;font-size:12px}
+.btn.no:hover{color:var(--text)}
+.modal-back{position:fixed;inset:0;background:rgba(10,12,16,.7);display:none;align-items:center;justify-content:center;z-index:50}
+.modal-back.show{display:flex}
+.modal{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:20px;max-width:460px;width:92%}
+.modal h2{font-size:15px;margin-bottom:10px;color:var(--text)}
+.modal .mbody{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px}
+.modal .mbody b{color:var(--text)}
+.modal .mrow{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--line)}
+.modal .mrow span{color:var(--muted)}.modal .mrow b{color:var(--text);font-family:ui-monospace,Menlo,monospace}
+.modal .mactions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.msg{background:rgba(111,220,155,.08);border:1px solid var(--green);border-radius:7px;padding:8px 12px;font-size:12px;margin-bottom:14px;display:none}
+.msg.show{display:block}
+.msg.err{background:rgba(224,106,106,.08);border-color:var(--red)}
 </style></head><body><div class="wrap">
 <h1>Model Scoreboard</h1>
 <div class="sub">Pick your intelligence yardstick, rank models by intelligence over cost, judge in seconds.</div>
+<div class="routing" id="routing">Checking current routing...</div>
+<div class="msg" id="msg"></div>
 <div class="bar">
 <span class="lbl">metric</span>
 <select id="metric">
@@ -43,7 +68,7 @@ tr.me td{background:rgba(216,176,106,.07)}
 <span class="lbl">fresh k</span><input type="range" id="fresh" min="0" max="64" step="1" value="4"><span class="rv" id="fresh-v">4k</span>
 <span class="lbl">out k</span><input type="range" id="out" min="0" max="64" step="1" value="4"><span class="rv" id="out-v">4k</span>
 <input type="text" id="q" placeholder="search">
-<select id="sort"><option value="ratio">sort intel/cost</option><option value="intel">sort score</option><option value="cost">sort cost</option></select>
+<select id="sort"><option value="ratio">sort score/cost</option><option value="intel">sort score</option><option value="cost">sort cost</option></select>
 <div class="tgl" id="reason-tgl"><button class="on" data-v="all">all</button><button data-v="yes">reason</button><button data-v="no">non</button></div>
 </div>
 <div class="metric-desc" id="mdesc"></div>
@@ -51,11 +76,16 @@ tr.me td{background:rgba(216,176,106,.07)}
 <div class="card">
 <div class="cnt" id="cnt" style="margin-bottom:8px"></div>
 <table><thead><tr>
-<th>rank</th><th>model</th><th class="num" onclick="setSort('intel')">score</th><th class="num" onclick="setSort('cost')">cost/call</th><th class="num" onclick="setSort('ratio')">score/cost</th><th class="num" onclick="setSort('ctx')">ctx</th>
+<th>rank</th><th>model</th><th class="num" onclick="setSort('intel')">score</th><th class="num" onclick="setSort('cost')">cost/call</th><th class="num" onclick="setSort('ratio')">score/cost</th><th class="num" onclick="setSort('ctx')">ctx</th><th></th>
 </tr></thead><tbody id="body"></tbody></table>
 <div class="note" id="foot"></div>
 </div>
 </div>
+<div class="modal-back" id="modal-back"><div class="modal">
+<h2>Apply routing model?</h2>
+<div class="mbody" id="modal-body"></div>
+<div class="mactions"><button class="btn no" id="modal-no">Cancel</button><button class="btn ok" id="modal-yes">Yes, apply</button></div>
+</div></div>
 <script>
 const $=s=>document.querySelector(s);let ROWS=[];
 const fmtMoney=n=>'$'+(n<0.01?n.toFixed(4):n.toFixed(2));
@@ -66,15 +96,23 @@ const DESC={
  coding:'Artificial Analysis Coding Index: how well a model writes and fixes code. Higher than the intelligence index on most coding models.',
  agentic:'Artificial Analysis Agentic Index: how well a model carries out long-horizon agent tasks with tools. The most task-relevant for autonomous work.'
 };
-async function load(){try{const c=$('#cached').value,f=$('#fresh').value,o=$('#out').value,m=$('#metric').value;const r=await fetch('/api/scoreboard?cached='+c+'&fresh='+f+'&out='+o+'&metric='+m);if(!r.ok)throw 0;const d=await r.json();ROWS=d.rows||[];render();}catch(e){$('#body').innerHTML='<tr><td colspan=6 class="note">failed to load</td></tr>';}}
+async function load(){try{const c=$('#cached').value,f=$('#fresh').value,o=$('#out').value,m=$('#metric').value;const r=await fetch('/api/scoreboard?cached='+c+'&fresh='+f+'&out='+o+'&metric='+m);if(!r.ok)throw 0;const d=await r.json();ROWS=d.rows||[];render();}catch(e){$('#body').innerHTML='<tr><td colspan=7 class="note">failed to load</td></tr>';}}
 let sortKey='ratio';
 function setSort(k){sortKey=k;render();}
 function filtered(){const q=($('#q').value||'').toLowerCase();const rv=document.querySelector('#reason-tgl button.on').dataset.v;return ROWS.filter(m=>{if(q&&!(m.id||'').toLowerCase().includes(q)&&!(m.name||'').toLowerCase().includes(q))return false;if(rv==='yes'&&!m.reasoning)return false;if(rv==='no'&&m.reasoning)return false;return true;});}
-function render(){$('#mdesc').textContent=DESC[$('#metric').value]||'';const rows=filtered().slice();rows.sort((a,b)=>{if(sortKey==='ratio'){const ar=a.ratio==null?-1:a.ratio,br=b.ratio==null?-1:b.ratio;return br-ar;}if(sortKey==='intel')return b.score-a.score;if(sortKey==='cost')return a.cost-b.cost;if(sortKey==='ctx')return b.ctx-a.ctx;return 0;});$('#cnt').textContent=rows.length+' of '+ROWS.length+' scored';const maxSc=Math.max(...rows.map(r=>r.score).filter(n=>!isNaN(n)),1);let h='';rows.forEach((r,i)=>{const isMe=r.id==='deepseek/deepseek-v4-flash-0731';const ratioText=r.ratio==null?'<span class="note">free</span>':r.ratio.toLocaleString(undefined,{maximumFractionDigits:0});const barW=Math.max(6,(r.score/maxSc)*100);const tags=(isMe?'<span class="tag me">yours</span>':'')+(r.free?'<span class="tag free">free</span>':'');h+='<tr class="'+(isMe?'me':'')+'"><td class="num" style="color:var(--muted)">'+(i+1)+'</td><td class="mono">'+r.id.split('/').pop()+tags+'</td><td class="num"><div class="score-col"><div class="score-bar" style="width:'+barW+'%"></div>'+r.score.toFixed(1)+'</div></td><td class="num">'+fmtMoney(r.cost)+'</td><td class="num '+(r.ratio!=null&&r.ratio>10000?'ratio':'ratio-w')+'">'+ratioText+'</td><td class="num">'+fmtK(r.ctx)+'</td></tr>';});$('#body').innerHTML=h;const me=rows.find(r=>r.id==='deepseek/deepseek-v4-flash-0731');if(me){const rText=me.ratio!=null?me.ratio.toLocaleString(undefined,{maximumFractionDigits:0}):'free';$('#verdict').innerHTML='<b>Your model: '+me.id.split('/').pop()+'</b> — score '+me.score.toFixed(1)+' on '+$('#metric').value+', cost '+fmtMoney(me.cost)+'/call, score/cost '+rText+'. Ranked against '+rows.length+' scored models.';}else{$('#verdict').innerHTML='';}}
+function render(){$('#mdesc').textContent=DESC[$('#metric').value]||'';const rows=filtered().slice();rows.sort((a,b)=>{if(sortKey==='ratio'){const ar=a.ratio==null?-1:a.ratio,br=b.ratio==null?-1:b.ratio;return br-ar;}if(sortKey==='intel')return b.score-a.score;if(sortKey==='cost')return a.cost-b.cost;if(sortKey==='ctx')return b.ctx-a.ctx;return 0;});$('#cnt').textContent=rows.length+' of '+ROWS.length+' scored';const maxSc=Math.max(...rows.map(r=>r.score).filter(n=>!isNaN(n)),1);let h='';rows.forEach((r,i)=>{const isMe=r.id==='deepseek/deepseek-v4-flash-0731';const ratioText=r.ratio==null?'<span class="note">free</span>':r.ratio.toLocaleString(undefined,{maximumFractionDigits:0});const barW=Math.max(6,(r.score/maxSc)*100);const tags=(isMe?'<span class="tag me">yours</span>':'')+(r.free?'<span class="tag free">free</span>':'');h+='<tr class="'+(isMe?'me':'')+'"><td class="num" style="color:var(--muted)">'+(i+1)+'</td><td class="mono">'+r.id.split('/').pop()+tags+'</td><td class="num"><div class="score-col"><div class="score-bar" style="width:'+barW+'%"></div>'+r.score.toFixed(1)+'</div></td><td class="num">'+fmtMoney(r.cost)+'</td><td class="num '+(r.ratio!=null&&r.ratio>10000?'ratio':'ratio-w')+'">'+ratioText+'</td><td class="num">'+fmtK(r.ctx)+'</td><td><button class="btn apply" data-model="'+r.id+'">apply</button></td></tr>';});$('#body').innerHTML=h;const me=rows.find(r=>r.id==='deepseek/deepseek-v4-flash-0731');if(me){const rText=me.ratio!=null?me.ratio.toLocaleString(undefined,{maximumFractionDigits:0}):'free';$('#verdict').innerHTML='<b>Your model: '+me.id.split('/').pop()+'</b>. Score '+me.score.toFixed(1)+', cost '+fmtMoney(me.cost)+'/call, score/cost '+rText+'. Ranked against '+rows.length+' scored models in this view.';}else{$('#verdict').innerHTML='';}
+$('#foot').innerHTML='Intelligence = artificial_analysis index from the live catalog. Cost = per call at the token mix above, cache read priced in. Models without a benchmark score are excluded. No score is invented. Apply writes the chosen model into Aside routing after your confirm.';}
+async function refreshRouting(){try{const r=await fetch('/api/apply/status');if(!r.ok)throw 0;const d=await r.json();if(!d.configured){$('#routing').innerHTML='<span class="lbl">Routing:</span><span class="cur">not configured</span>';return;}const dm=d.defaultModel;const id=(dm.modelId||'').split('/').pop();$('#routing').innerHTML='<span class="lbl">Routing:</span><span class="cur">'+id+'</span><span class="lbl">via</span><span>'+dm.provider+'</span>'+(d.pending?'<span class="lbl">pending apply:</span><span class="pend">'+d.pending.model.split('/').pop()+'</span>':'');}catch(e){$('#routing').innerHTML='<span class="lbl">Routing: unknown</span>';}}
+function showMsg(t,err){const m=$('#msg');m.textContent=t;m.className='msg show'+(err?' err':'');setTimeout(()=>{m.className='msg';},6000);}
+let staged=null;
+async function onApplyClick(modelId){try{const r=await fetch('/api/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:modelId,metric:$('#metric').value,cached:$('#cached').value,fresh:$('#fresh').value,out:$('#out').value})});const d=await r.json();if(!r.ok){showMsg(d.error||'apply failed',true);return;}staged=d;const mb=$('#modal-body');const sc=d.score!=null?d.score.toFixed(1):'n/a';mb.innerHTML='<div class="mrow"><span>Model</span><b>'+d.model.id+'</b></div><div class="mrow"><span>Metric</span><b>'+d.metric+'</b></div><div class="mrow"><span>Score</span><b>'+sc+'</b></div><div class="mrow"><span>Cost per call</span><b>'+fmtMoney(d.cost)+'</b></div><div class="mrow"><span>Score per cost</span><b>'+(d.ratio!=null?d.ratio.toLocaleString(undefined,{maximumFractionDigits:0}):'free')+'</b></div><p style="margin-top:10px">This becomes the default routing model for new Aside sessions. Nothing is written until you confirm.</p>';$('#modal-back').classList.add('show');}catch(e){showMsg('could not stage apply: '+e.message,true);}}
+$('#modal-no').addEventListener('click',()=>{$('#modal-back').classList.remove('show');staged=null;});
+$('#modal-yes').addEventListener('click',async()=>{if(!staged)return;try{const r=await fetch('/api/apply/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:staged.token})});const d=await r.json();if(!r.ok){showMsg(d.error||'confirm failed',true);return;}showMsg('Applied '+staged.model.id+' to routing. Backup: '+d.backup);staged=null;$('#modal-back').classList.remove('show');refreshRouting();}catch(e){showMsg('confirm error: '+e.message,true);}});
 $('#metric').addEventListener('change',load);$('#cached').addEventListener('input',()=>{$('#cached-v').textContent=Math.round($('#cached').value)+'k';load();});
 $('#fresh').addEventListener('input',()=>{$('#fresh-v').textContent=Math.round($('#fresh').value)+'k';load();});
 $('#out').addEventListener('input',()=>{$('#out-v').textContent=Math.round($('#out').value)+'k';load();});
 $('#q').addEventListener('input',render);$('#sort').addEventListener('change',e=>setSort(e.target.value));
 document.querySelectorAll('#reason-tgl button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#reason-tgl button').forEach(x=>x.classList.remove('on'));b.classList.add('on');render();}));
-load();
+document.addEventListener('click',e=>{const b=e.target.closest('button.apply');if(b)onApplyClick(b.dataset.model);});
+load();refreshRouting();
 </script></body></html>

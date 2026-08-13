@@ -27,8 +27,21 @@ export function nousProvider(usageByModel) {
 }
 
 // Command Code: real per-request cost exists in Studio /usage but requires login.
-// Adapter ready; data is only available once a logged-in session is supplied.
+// When a live probe result is passed in (has `measurable`), use it verbatim so
+// the honest note from the probe is preserved. Otherwise return the default
+// not-measurable marker. Never invents a per-request number.
 export function commandCodeProvider(opts = {}) {
+  if (opts && typeof opts.measurable === 'boolean') {
+    return {
+      id: 'commandcode',
+      name: 'Command Code',
+      costModel: 'per-request',
+      measurable: opts.measurable,
+      note: opts.note || 'No usage pulled.',
+      totalCost: opts.totalCost ?? null,
+      models: opts.models ?? [],
+    };
+  }
   return {
     id: 'commandcode',
     name: 'Command Code',
