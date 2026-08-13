@@ -1,238 +1,82 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Nous Portal Dashboard</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Nous Portal Dashboard</title>
 <style>
-:root{
-  --bg:#14171c; --panel:#1d2129; --panel2:#232833; --line:#2a2f3a;
-  --blue:#3b6df0; --amber:#d8b06a; --muted:#9aa3b2; --text:#e8ecf1; --green:#6fdc9b; --red:#e06a6a;
-}
+:root{--bg:#14171c;--panel:#1d2129;--panel2:#232833;--line:#2a2f3a;--blue:#3b6df0;--amber:#d8b06a;--muted:#9aa3b2;--text:#e8ecf1;--green:#6fdc9b;--red:#e06a6a}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.5;padding:32px;font-size:14px}
 .wrap{max-width:1200px;margin:0 auto}
-h1{font-size:24px;margin-bottom:4px}
-.sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+h1{font-size:24px;margin-bottom:4px}.sub{color:var(--muted);font-size:13px;margin-bottom:20px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:20px}
-.grid{display:grid;grid-template-columns:280px 1fr;gap:16px}
-@media(max-width:860px){.grid{grid-template-columns:1fr}}
 .stats{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px}
 .stat{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-width:120px}
-.stat .k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
-.stat .v{font-size:20px;font-weight:700;margin-top:2px}
+.stat .k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.stat .v{font-size:20px;font-weight:700;margin-top:2px}
 label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em}
 input[type=text],select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:6px;padding:8px 10px;font-size:13px}
-.range{width:100%}
-.range-val{font-size:13px;color:var(--amber);font-weight:600}
-.sliders .row{display:grid;grid-template-columns:130px 1fr 64px;gap:10px;align-items:center;margin-bottom:12px}
-.sliders .lbl{font-size:13px;color:var(--muted)}
+button{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer}button:hover{opacity:.9}
+.btn-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;user-select:none}
-th:hover{color:var(--text)}
-td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th:hover{color:var(--text)}td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 .mono{font-family:ui-monospace,Menlo,Consolas,monospace;color:#cfd6e0;font-size:12px;word-break:break-all}
 .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
-.cur{background:var(--amber);color:#14171c}
-.free{background:var(--green);color:#14171c}
-.num{font-variant-numeric:tabular-nums;text-align:right}
-th.num{text-align:right}
+.cur{background:var(--amber);color:#14171c}.free{background:var(--green);color:#14171c}
+.num{font-variant-numeric:tabular-nums;text-align:right}th.num{text-align:right}
 tr.hl{background:rgba(59,109,240,.08)}
-.row-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
-.row-head h2{font-size:15px;color:var(--amber);font-weight:600}
+.row-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}.row-head h2{font-size:15px;color:var(--amber);font-weight:600}
 .count{color:var(--muted);font-size:12px}
 .err{color:var(--red);padding:16px;border:1px solid var(--red);border-radius:8px;margin-bottom:16px}
 .loading{color:var(--muted);padding:24px;text-align:center}
-.bar-cell{min-width:90px}
-.bar{height:9px;background:var(--blue);border-radius:5px}
-.bar-amber{background:var(--amber)}
 .note{color:var(--muted);font-size:12px;margin-top:14px;line-height:1.6}
-button{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer}
-button:hover{opacity:.9}
-.btn-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>Nous Portal Dashboard</h1>
-  <div class="sub" id="status">Loading live catalog...</div>
-
-  <div id="err" class="err" style="display:none"></div>
-
-  <div class="stats" id="stats"></div>
-
-  <div class="grid">
-    <div>
-      <div class="card">
-        <label>Search</label>
-        <input type="text" id="q" placeholder="provider or model name">
-        <div style="height:10px"></div>
-        <label>Provider</label>
-        <select id="prov"></select>
-        <div style="height:10px"></div>
-        <label>Reasoning only</label>
-        <select id="reason">
-          <option value="any">Any</option>
-          <option value="yes">Reasoning models</option>
-          <option value="no">Non-reasoning</option>
-        </select>
-      </div>
-      <div class="card">
-        <div class="sliders">
-          <div class="row"><span class="lbl">Cached prompt (k)</span><input type="range" id="cached" min="0" max="200" step="4" value="80" class="range"><span class="range-val" id="cached-v">80k</span></div>
-          <div class="row"><span class="lbl">Fresh prompt (k)</span><input type="range" id="fresh" min="0" max="64" step="1" value="4" class="range"><span class="range-val" id="fresh-v">4k</span></div>
-          <div class="row"><span class="lbl">Output (k)</span><input type="range" id="out" min="0" max="64" step="1" value="4" class="range"><span class="range-val" id="out-v">4k</span></div>
-        </div>
-        <div class="note">Model cost per call for the mix above. Cache read dominates when your prompt is large and hits, so this is the honest number for your workload.</div>
-        <div class="btn-row">
-          <button id="sort-cr">Sort by cache read</button>
-          <button id="sort-cost">Sort by cost/call</button>
-          <button id="sort-out" class="btn-ghost">Sort by output</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="row-head">
-        <h2>Models</h2>
-        <span class="count" id="count"></span>
-      </div>
-      <div id="table-wrap" class="loading">Loading...</div>
-    </div>
-  </div>
-  <div class="note" id="foot"></div>
+.rec{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:start;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:12px}
+.rec:hover{border-color:var(--blue)}.rec .rank{font-size:22px;font-weight:700;color:var(--blue);width:34px;flex:none}
+.rec .from{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--red);text-decoration:line-through;opacity:.85}
+.rec .arrow{font-size:18px;color:var(--green);margin:0 6px}
+.rec .to{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--green);font-weight:600}
+.rec .meta{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.6}
+.rec .save{text-align:right;flex:none}.rec .save .amt{font-size:22px;font-weight:700;color:var(--green)}
+.rec .save .pct{font-size:13px;color:var(--green);margin-left:4px}.rec .save .sub{color:var(--muted);font-size:11px;margin-top:2px}
+.rec .cur-hit{color:var(--amber)}
+.advisor-banner{background:rgba(59,109,240,.08);border:1px solid var(--blue);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:var(--muted)}.advisor-banner b{color:var(--blue)}
+</style></head><body><div class="wrap">
+<h1>Nous Portal Dashboard</h1>
+<div class="sub" id="status">Loading...</div>
+<div id="err" class="err" style="display:none"></div>
+<div class="stats" id="stats"></div>
+<div class="card" id="advisor">
+<div class="row-head"><h2>Advisor: switches from your real usage</h2><span class="count" id="rec-count"></span></div>
+<div class="advisor-banner">Each line prices the traffic that actually ran on the left model, with its real cache hit rate, on the right model from the live catalog. A cheaper model only qualifies if it clears your intelligence bar. Cache economics are in the math, not a footnote.</div>
+<div id="rec-list" class="loading">Analyzing your usage...</div>
+<div class="btn-row"><button id="rec-reason-on">Reasoning models only</button><button id="rec-reason-off" class="btn-ghost">Allow non-reasoning</button></div>
 </div>
-
+<div style="display:grid;grid-template-columns:280px 1fr;gap:16px">
+<div>
+<div class="card"><label>Search</label><input type="text" id="q" placeholder="provider or model name"><div style="height:10px"></div><label>Provider</label><select id="prov"></select><div style="height:10px"></div><label>Reasoning only</label><select id="reason"><option value="any">Any</option><option value="yes">Reasoning models</option><option value="no">Non-reasoning</option></select></div>
+<div class="card"><label>Cached prompt (k)</label><input type="range" id="cached" min="0" max="200" step="4" value="80" style="width:100%"><div id="cached-v" style="font-size:13px;color:var(--amber);font-weight:600;margin-bottom:12px">80k</div><label>Fresh prompt (k)</label><input type="range" id="fresh" min="0" max="64" step="1" value="4" style="width:100%"><div id="fresh-v" style="font-size:13px;color:var(--amber);font-weight:600;margin-bottom:12px">4k</div><label>Output (k)</label><input type="range" id="out" min="0" max="64" step="1" value="4" style="width:100%"><div id="out-v" style="font-size:13px;color:var(--amber);font-weight:600;margin-bottom:12px">4k</div><div class="note">Cost per call for the mix above. Cache read dominates when your prompt is large and hits.</div><div class="btn-row"><button id="sort-cr">Sort by cache read</button><button id="sort-cost">Sort by cost/call</button><button id="sort-out" class="btn-ghost">Sort by output</button></div></div>
+</div>
+<div class="card"><div class="row-head"><h2>Models</h2><span class="count" id="count"></span></div><div id="table-wrap" class="loading">Loading...</div></div>
+</div>
+<div class="note" id="foot"></div>
+</div>
 <script>
-const $ = s => document.querySelector(s);
-let MODELS = [];
-const fmt = n => n==null?'-':(n<0.001?n.toFixed(4):n<1?n.toFixed(3):n.toFixed(2));
-const fmtK = n => n>=1000?(n/1000).toFixed(1)+'M':Math.round(n)+'k';
-
-function perM(n){ return n==null?null:(Number(n)*1e6); }
-
-async function load(){
-  try{
-    const r = await fetch('/api/models');
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const j = await r.json();
-    MODELS = j.models;
-    renderStats(j.count, j.fetchedAt);
-    render();
-    $('#status').textContent = 'Live catalog: '+j.count+' models, fetched '+new Date(j.fetchedAt).toLocaleTimeString();
-  }catch(e){
-    $('#err').style.display='block';
-    $('#err').textContent = 'Failed to load catalog: '+e.message+'  Is the server running with NOUS_API_KEY set?';
-    $('#table-wrap').textContent='';
-  }
-}
-
-function renderStats(count, ts){
-  const providers = new Set();
-  let reason=0, ctxMax=0;
-  MODELS.forEach(m=>{
-    const p=(m.id||'').split('/')[0];
-    if(p) providers.add(p);
-    if(m.reasoning) reason++;
-    if(m.context_length>ctxMax) ctxMax=m.context_length;
-  });
-  const stat = (k,v)=>`<div class="stat"><div class="k">${k}</div><div class="v">${v}</div></div>`;
-  $('#stats').innerHTML =
-    stat('Models', count) + stat('Providers', providers.size) +
-    stat('Reasoning', reason) + stat('Max context', fmtK(ctxMax));
-
-  const provSel = $('#prov');
-  provSel.innerHTML = '<option value="">All providers</option>'+[...providers].sort().map(p=>`<option>${p}</option>`).join('');
-}
-
-function getMix(){
-  return { cached:+$('#cached').value, fresh:+$('#fresh').value, out:+$('#out').value };
-}
-function costPerCall(m){
-  const {cached,fresh,out} = getMix();
-  const p=m.pricing||{};
-  const cr=perM(p.input_cache_read), pr=perM(p.prompt), co=perM(p.completion);
-  if(cr==null||pr==null||co==null) return null;
-  return cached*cr/1000 + fresh*pr/1000 + out*co/1000;
-}
-
-let sortKey='cr', sortDir=1;
-function filtered(){
-  const q=($('#q').value||'').toLowerCase();
-  const prov=$('#prov').value;
-  const reason=$('#reason').value;
-  return MODELS.filter(m=>{
-    if(q && !(m.id||'').toLowerCase().includes(q) && !(m.name||'').toLowerCase().includes(q)) return false;
-    if(prov && (m.id||'').split('/')[0]!==prov) return false;
-    if(reason==='yes' && !m.reasoning) return false;
-    if(reason==='no' && m.reasoning) return false;
-    return true;
-  });
-}
-
-function render(){
-  const rows = filtered();
-  const cp = costPerCall;
-  rows.sort((a,b)=>{
-    let va,vb;
-    if(sortKey==='cr'){ va=perM(a.pricing?.input_cache_read); vb=perM(b.pricing?.input_cache_read); }
-    else if(sortKey==='cost'){ va=cp(a)??Infinity; vb=cp(b)??Infinity; }
-    else { va=perM(a.pricing?.completion); vb=perM(b.pricing?.completion); }
-    if(va==null) va=Infinity; if(vb==null) vb=Infinity;
-    return (va-vb)*sortDir;
-  });
-  const shown = rows.slice(0,200);
-  const maxCr = Math.max(...shown.map(m=>perM(m.pricing?.input_cache_read)??0).filter(n=>n>0),0.000001);
-
-  $('#count').textContent = rows.length+' shown';
-  if(shown.length===0){ $('#table-wrap').innerHTML='<div class="loading">No models match.</div>'; return; }
-
-  let html = '<table><thead><tr>'+
-    '<th onclick="setSort(\'id\')">Model</th>'+
-    '<th class="num" onclick="setSort(\'cr\')">Cache read</th>'+
-    '<th class="num" onclick="setSort(\'prompt\')">Raw in</th>'+
-    '<th class="num" onclick="setSort(\'out\')">Output</th>'+
-    '<th class="num" onclick="setSort(\'cost\')">Cost/call</th>'+
-    '<th onclick="setSort(\'ctx\')">Context</th>'+
-    '</tr></thead><tbody>';
-
-  shown.forEach(m=>{
-    const p=m.pricing||{};
-    const cr=perM(p.input_cache_read), pr=perM(p.prompt), co=perM(p.completion);
-    const c=cp(m);
-    const isCur = m.id==='deepseek/deepseek-v4-flash-0731' || m.id==='qwen/qwen3.8-max';
-    const isFree = pr===0;
-    const barW = Math.max(2,(cr/maxCr)*100);
-    const tags = (isCur?'<span class="tag cur">your std</span>':'')+(isFree?'<span class="tag free">free</span>':'');
-    html += `<tr class="${isCur?'hl':''}"><td class="mono">${m.id}${tags}</td>`+
-      `<td class="num"><div class="bar-cell"><div class="bar ${isCur?'bar-amber':''}" style="width:${barW}%"></div></div>$${fmt(cr)}</td>`+
-      `<td class="num">$${fmt(pr)}</td>`+
-      `<td class="num">$${fmt(co)}</td>`+
-      `<td class="num"><b>$${c==null?'-':c.toFixed(4)}</b></td>`+
-      `<td class="num">${fmtK(m.context_length||0)}</td></tr>`;
-  });
-  html += '</tbody></table>';
-  $('#table-wrap').innerHTML = html;
-}
-
-function setSort(k){
-  if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; }
-  render();
-}
-
-$('#q').addEventListener('input',render);
-$('#prov').addEventListener('change',render);
-$('#reason').addEventListener('change',render);
-['cached','fresh','out'].forEach(id=>{
-  $('#'+id).addEventListener('input',()=>{ $('#'+id+'-v').textContent = Math.round($('#'+id).value)+'k'; render(); });
-});
-$('#sort-cr').addEventListener('click',()=>setSort('cr'));
-$('#sort-cost').addEventListener('click',()=>setSort('cost'));
-$('#sort-out').addEventListener('click',()=>setSort('out'));
-
-load();
-setInterval(load, 120000); // refresh catalog every 2 min
-</script>
-</body>
-</html>
+const $=s=>document.querySelector(s);let MODELS=[],USAGE=[];
+const fmt=n=>n==null?'-':(n<0.001?n.toFixed(4):n<1?n.toFixed(3):n.toFixed(2));
+const fmtK=n=>n>=1000?(n/1000).toFixed(1)+'M':Math.round(n)+'k';
+const fmtMoney=n=>'$'+(n<0.01?n.toFixed(4):n.toFixed(2));
+const perM=n=>n==null?null:(Number(n)*1e6);
+async function load(){try{const[mr,ur]=await Promise.all([fetch('/api/models').then(r=>r.ok?r.json():Promise.reject(new Error('HTTP '+r.status))),fetch('/api/usage').then(r=>r.ok?r.json():Promise.reject(new Error('HTTP '+r.status)))]);MODELS=mr.models;USAGE=ur;renderStats(mr.count,mr.fetchedAt);render();$('#status').textContent='Live catalog: '+mr.count+' models, fetched '+new Date(mr.fetchedAt).toLocaleTimeString();}catch(e){$('#err').style.display='block';$('#err').textContent='Failed to load: '+e.message;$('#table-wrap').textContent='';}}
+function renderStats(count,ts){const pv=new Set();let re=0,cx=0;MODELS.forEach(m=>{const p=(m.id||'').split('/')[0];if(p)pv.add(p);if(m.reasoning)re++;if(m.context_length>cx)cx=m.context_length;});let sp=0,cache=0;USAGE.forEach(u=>{sp+=u.spend;cache+=u.cacheRead;});const st=(k,v)=>'<div class="stat"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';$('#stats').innerHTML=st('Models',count)+st('Providers',pv.size)+st('Reasoning',re)+st('30d spend',fmtMoney(sp))+st('Cache reads',fmtK(cache));const ps=$('#prov');ps.innerHTML='<option value="">All providers</option>'+[...pv].sort().map(p=>'<option>'+p+'</option>').join('');}
+function getMix(){return{cached:+$('#cached').value,fresh:+$('#fresh').value,out:+$('#out').value};}
+function costPerCall(m){const{cached,fresh,out}=getMix();const p=m.pricing||{};const cr=perM(p.input_cache_read),pr=perM(p.prompt),co=perM(p.completion);if(cr==null||pr==null||co==null)return null;return cached*cr/1000+fresh*pr/1000+out*co/1000;}
+let sortKey='cr',sortDir=1;
+function filtered(){const q=($('#q').value||'').toLowerCase(),prov=$('#prov').value,reason=$('#reason').value;return MODELS.filter(m=>{if(q&&!(m.id||'').toLowerCase().includes(q)&&!(m.name||'').toLowerCase().includes(q))return false;if(prov&&(m.id||'').split('/')[0]!==prov)return false;if(reason==='yes'&&!m.reasoning)return false;if(reason==='no'&&m.reasoning)return false;return true;});}
+function render(){const rows=filtered(),cp=costPerCall;rows.sort((a,b)=>{let va,vb;if(sortKey==='cr'){va=perM(a.pricing?.input_cache_read);vb=perM(b.pricing?.input_cache_read);}else if(sortKey==='cost'){va=cp(a)??Infinity;vb=cp(b)??Infinity;}else{va=perM(a.pricing?.completion);vb=perM(b.pricing?.completion);}if(va==null)va=Infinity;if(vb==null)vb=Infinity;return(va-vb)*sortDir;});const shown=rows.slice(0,200);const maxCr=Math.max(...shown.map(m=>perM(m.pricing?.input_cache_read)??0).filter(n=>n>0),0.000001);$('#count').textContent=rows.length+' shown';if(shown.length===0){$('#table-wrap').innerHTML='<div class="loading">No models match.</div>';return;}let html='<table><thead><tr><th onclick="setSort(\'id\')">Model</th><th class="num" onclick="setSort(\'cr\')">Cache read</th><th class="num" onclick="setSort(\'prompt\')">Raw in</th><th class="num" onclick="setSort(\'out\')">Output</th><th class="num" onclick="setSort(\'cost\')">Cost/call</th><th onclick="setSort(\'ctx\')">Context</th></tr></thead><tbody>';shown.forEach(m=>{const p=m.pricing||{};const cr=perM(p.input_cache_read),pr=perM(p.prompt),co=perM(p.completion);const c=cp(m);const isCur=m.id==='deepseek/deepseek-v4-flash-0731'||m.id==='qwen/qwen3.8-max';const isFree=pr===0;const barW=Math.max(2,(cr/maxCr)*100);const tags=(isCur?'<span class="tag cur">your std</span>':'')+(isFree?'<span class="tag free">free</span>':'');html+='<tr class="'+(isCur?'hl':'')+'"><td class="mono">'+m.id+tags+'</td><td class="num"><div style="min-width:90px"><div style="height:9px;background:'+(isCur?'var(--amber)':'var(--blue)')+';border-radius:5px;width:'+barW+'%"></div></div>$'+fmt(cr)+'</td><td class="num">$'+fmt(pr)+'</td><td class="num">$'+fmt(co)+'</td><td class="num"><b>$'+(c==null?'-':c.toFixed(4))+'</b></td><td class="num">'+fmtK(m.context_length||0)+'</td></tr>';});html+='</tbody></table>';$('#table-wrap').innerHTML=html;}
+let recReasoningOnly=true;
+async function loadRecs(){$('#rec-list').innerHTML='<div class="loading">Analyzing your usage...</div>';try{const r=await fetch('/api/recommend?reasoning='+(recReasoningOnly?'on':'off'));if(!r.ok)throw new Error('HTTP '+r.status);const d=await r.json();renderRecs(d.recs);}catch(e){$('#rec-list').innerHTML='<div class="err">Failed to analyze usage: '+e.message+'</div>';}}
+function renderRecs(recs){$('#rec-count').textContent=recs.length+' suggested switches';if(recs.length===0){$('#rec-list').innerHTML='<div class="note">No cheaper model clears your intelligence bar for your current usage. You are already near the floor.</div>';return;}let html='';recs.slice(0,8).forEach((r,i)=>{const hit=(r.hitRate*100).toFixed(0)+'%';html+='<div class="rec"><div class="rank">'+(i+1)+'</div><div><div><span class="from">'+r.current+'</span><span class="arrow">→</span><span class="to">'+r.best.model+'</span></div><div class="meta">your actual spend <b>'+fmtMoney(r.spend)+'</b> on <b>'+r.requests+'</b> requests<br>cache hit <span class="cur-hit">'+hit+'</span> · cache read <b>$'+r.currentCacheRead+'/M → $'+r.best.cacheRead+'/M</b><br>would cost <b>'+fmtMoney(r.best.cost)+'</b> on the cheaper model</div></div><div class="save"><div><span class="amt">'+fmtMoney(r.best.saving)+'</span><span class="pct">('+(r.best.savingPct).toFixed(0)+'%)</span></div><div class="sub">saved / period</div></div></div>';});html+='<div class="note">Ranked by total dollar saving. Reasoning filter: '+(recReasoningOnly?'on (models must reason)':'off (any model may qualify)')+'. These are recommendations only; no config changes.</div>';$('#rec-list').innerHTML=html;}
+function setSort(k){if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1;}render();}
+$('#q').addEventListener('input',render);$('#prov').addEventListener('change',render);$('#reason').addEventListener('change',render);
+['cached','fresh','out'].forEach(id=>{$('#'+id).addEventListener('input',()=>{$('#'+id+'-v').textContent=Math.round($('#'+id).value)+'k';render();});});
+$('#sort-cr').addEventListener('click',()=>setSort('cr'));$('#sort-cost').addEventListener('click',()=>setSort('cost'));$('#sort-out').addEventListener('click',()=>setSort('out'));
+$('#rec-reason-on').addEventListener('click',()=>{recReasoningOnly=true;renderRecsToggle();});$('#rec-reason-off').addEventListener('click',()=>{recReasoningOnly=false;renderRecsToggle();});
+function renderRecsToggle(){$('#rec-reason-on').style.background=recReasoningOnly?'':'transparent';$('#rec-reason-off').style.background=recReasoningOnly?'transparent':'';loadRecs();}
+load();loadRecs();setInterval(load,120000);
+</script></body></html>

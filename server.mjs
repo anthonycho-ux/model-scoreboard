@@ -5,6 +5,7 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { parseUsageCSV, usageByModel, recommendations } from './usage.mjs';
 
 const PORT = Number(process.env.PORT || 8347);
 const API = 'https://inference-api.nousresearch.com/v1';
@@ -27,6 +28,16 @@ async function getCatalog() {
   return cache.data;
 }
 
+let usageRowsCache = { data: null, ts: 0 };
+const USAGE_TTL = 120_000;
+async function getUsageRows() {
+  if (usageRowsCache.data && Date.now() - usageRowsCache.ts < USAGE_TTL) return usageRowsCache.data;
+  const text = await readFile(path.join(__dirname, 'usage.csv'), 'utf8');
+  const rows = parseUsageCSV(text);
+  usageRowsCache = { data: rows, ts: Date.now() };
+  return rows;
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -38,6 +49,33 @@ const server = http.createServer(async (req, res) => {
       res.end(JSON.stringify({ count: data.length, fetchedAt: new Date().toISOString(), models: data }));
     } catch (e) {
       res.writeHead(502, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
+  if (url.pathname === '/api/usage') {
+    try {
+      const rows = await getUsageRows();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(usageByModel(rows)));
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
+  if (url.pathname === '/api/recommend') {
+    try {
+      const [catalog, rows] = await Promise.all([getCatalog(), getUsageRows()]);
+      const usage = usageByModel(rows);
+      const reasoningOnly = url.searchParams.get('reasoning') !== 'off';
+      const recs = recommendations(usage, catalog, { reasoningOnly });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ usage, recs }));
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: e.message }));
     }
     return;
