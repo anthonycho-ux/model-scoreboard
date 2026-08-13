@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { parseUsageCSV, usageByModel, recommendations } from './usage.mjs';
 import { allProviders } from './providers.mjs';
+import { scoreboard } from './scoreboard.mjs';
 
 const PORT = Number(process.env.PORT || 8347);
 const API = 'https://inference-api.nousresearch.com/v1';
@@ -65,6 +66,22 @@ const server = http.createServer(async (req, res) => {
       });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ providers: provs }));
+    } catch (e) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
+  if (url.pathname === '/api/scoreboard') {
+    try {
+      const catalog = await getCatalog();
+      const cachedK = Number(url.searchParams.get('cached')) || 80;
+      const freshK = Number(url.searchParams.get('fresh')) || 4;
+      const outK = Number(url.searchParams.get('out')) || 4;
+      const rows = scoreboard(catalog, { cachedK, freshK, outK });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ count: rows.length, rows }));
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: e.message }));
