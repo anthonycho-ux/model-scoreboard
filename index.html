@@ -10,94 +10,98 @@ h1{font-size:19px;margin-bottom:12px}
 .kpi .k{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em}
 .kpi .v{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
 .kpi .v.g{color:var(--green)}.kpi .v.a{color:var(--amber)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:12px 14px;margin-bottom:14px}
+.sec-title{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.sec-title h2{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:0}
+.sec-title .cnt{color:var(--muted);font-size:11px}
+.prov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.prov{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.prov .name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.prov .st{font-size:10px;padding:1px 7px;border-radius:8px;font-weight:600}
+.st.real{background:var(--green);color:#14171c}
+.st.flat{background:var(--amber);color:#14171c}
+.st.wait{background:rgba(59,109,240,.2);color:var(--blue)}
+.st.lock{background:rgba(224,106,106,.2);color:var(--red)}
+.prov .cost{font-size:16px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums}
+.prov .note{color:var(--muted);font-size:11px;margin-top:4px;line-height:1.4}
 .bar{display:flex;gap:6px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin-bottom:12px;flex-wrap:wrap}
 .bar input[type=text]{flex:1;min-width:120px;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px}
 .bar select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 6px;font-size:12px}
 .bar .lbl{color:var(--muted);font-size:11px}
 .bar input[type=range]{width:110px;accent-color:var(--blue)}
 .bar .rv{color:var(--amber);font-weight:600;font-size:11px;width:34px}
+.bar .spacer{flex:1}
 .tgl{display:flex;gap:2px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px}
 .tgl button{border:none;background:transparent;color:var(--muted);padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer}
 .tgl button.on{background:var(--blue);color:#fff}
-h2{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:2px 0 6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{text-align:left;color:var(--muted);font-weight:600;padding:4px 8px;border-bottom:1px solid var(--line);font-size:10px;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;user-select:none;white-space:nowrap}
 th.num{text-align:right}
 td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
 td.mono{font-family:ui-monospace,Menlo,monospace;font-size:11px}
 td.num{text-align:right}
-.from{color:var(--red);text-decoration:line-through;opacity:.75}
-.to{color:var(--green);font-weight:600}
-.sav{color:var(--green);font-weight:700}
-.hit{color:var(--amber)}
-tr.hl td{background:rgba(59,109,240,.06)}
-.pct{color:var(--muted);font-size:10px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:12px}
-.sec-title{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.sec-title h2{margin:0}.sec-title .cnt{color:var(--muted);font-size:11px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.from{color:var(--red);text-decoration:line-through;opacity:.75}.to{color:var(--green);font-weight:600}
+.sav{color:var(--green);font-weight:700}.hit{color:var(--amber)}.tiny{color:var(--muted);font-size:10px}
 .note{color:var(--muted);font-size:11px;margin-top:10px;line-height:1.5}
-.tiny{color:var(--muted);font-size:10px}
-.bar .spacer{flex:1}
+.verdict{background:rgba(111,220,155,.1);border:1px solid var(--green);border-radius:9px;padding:10px 14px;margin-bottom:12px;font-size:12px}
+.verdict b{color:var(--green)}.verdict .dim{color:var(--muted);font-size:11px;margin-top:3px}
 </style></head><body><div class="wrap">
 <h1>Nous Advisor</h1>
-
 <div class="kpi" id="kpi"></div>
 
-<div class="bar" id="bar">
-  <input type="text" id="q" placeholder="search model">
-  <select id="prov"><option value="">all providers</option></select>
-  <div class="tgl" id="reason-tgl">
-    <button class="on" data-v="yes">reason</button>
-    <button data-v="no">any</button>
-  </div>
-  <span class="lbl">cache k</span>
-  <input type="range" id="cached" min="0" max="200" step="4" value="80">
-  <span class="rv" id="cached-v">80k</span>
-  <span class="spacer"></span>
+<div class="card">
+<div class="sec-title"><h2>Providers: actual cost per source</h2><span class="cnt" id="prov-cnt"></span></div>
+<div class="prov-grid" id="prov-grid"></div>
+<div class="note" id="prov-note"></div>
 </div>
+
+<div class="bar">
+<input type="text" id="q" placeholder="search model">
+<select id="prov"><option value="">all providers</option></select>
+<div class="tgl" id="reason-tgl"><button class="on" data-v="yes">reason</button><button data-v="no">any</button></div>
+<span class="lbl">cache k</span><input type="range" id="cached" min="0" max="200" step="4" value="80"><span class="rv" id="cached-v">80k</span>
+<span class="spacer"></span>
+</div>
+
+<div class="verdict" id="verdict"></div>
 
 <div class="grid2">
 <div class="card">
-  <div class="sec-title"><h2>Advisor switches</h2><span class="cnt" id="rec-cnt"></span></div>
-  <table><thead><tr>
-    <th>switch</th><th class="num">spend</th><th class="num">req</th><th class="num">hit</th><th class="num">saving</th><th class="num">cache /M</th>
-  </tr></thead><tbody id="rec-body"></tbody></table>
+<div class="sec-title"><h2>Advisor switches</h2><span class="cnt" id="rec-cnt"></span></div>
+<table><thead><tr><th>switch</th><th class="num">spend</th><th class="num">req</th><th class="num">hit</th><th class="num">saving</th></tr></thead><tbody id="rec-body"></tbody></table>
 </div>
 <div class="card">
-  <div class="sec-title"><h2>Catalog</h2><span class="cnt" id="cat-cnt"></span></div>
-  <div style="max-height:520px;overflow:auto"><table><thead><tr>
-    <th>model</th><th class="num">cache read</th><th class="num">in</th><th class="num">out</th><th class="num">cost/call</th><th class="num">ctx</th>
-  </tr></thead><tbody id="cat-body"></tbody></table></div>
+<div class="sec-title"><h2>Catalog</h2><span class="cnt" id="cat-cnt"></span></div>
+<div style="max-height:520px;overflow:auto"><table><thead><tr><th>model</th><th class="num">cache read</th><th class="num">in</th><th class="num">out</th><th class="num">cost/call</th><th class="num">ctx</th></tr></thead><tbody id="cat-body"></tbody></table></div>
 </div>
 </div>
-<div class="note" id="foot"></div>
 </div>
 <script>
-const $=s=>document.querySelector(s);let MODELS=[],USAGE=[],recReasoning=true;
+const $=s=>document.querySelector(s);let MODELS=[],USAGE=[],PROV=[],recReasoning=true;
 const fmt=n=>n==null?'-':(n<0.001?n.toFixed(4):n<1?n.toFixed(3):n.toFixed(2));
 const fmtK=n=>n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':Math.round(n);
 const fmtM=n=>'$'+(n<0.01?n.toFixed(4):n.toFixed(2));
 const perM=n=>n==null?null:(Number(n)*1e6);
-async function load(){try{const[mr,ur]=await Promise.all([fetch('/api/models').then(r=>r.ok?r.json():Promise.reject()),fetch('/api/usage').then(r=>r.ok?r.json():Promise.reject())]);MODELS=mr.models;USAGE=ur;renderKpi();initProv();render();}catch(e){$('#foot').textContent='load failed';}}
-function renderKpi(){let sp=0,req=0,cache=0,out=0;USAGE.forEach(u=>{sp+=u.spend;req+=u.requests;cache+=u.cacheRead;out+=u.output;});const hit=cache>0?(cache/(cache+out)*100).toFixed(0):0;$('#kpi').innerHTML=
- '<div class="b"><span class="k">spend</span><span class="v g">'+fmtM(sp)+'</span></div>'+
- '<div class="b"><span class="k">requests</span><span class="v">'+fmtK(req)+'</span></div>'+
- '<div class="b"><span class="k">cache reads</span><span class="v">'+fmtK(cache)+'</span></div>'+
- '<div class="b"><span class="k">hit rate</span><span class="v a">'+hit+'%</span></div>'+
- '<div class="b"><span class="k">models</span><span class="v">'+MODELS.length+'</span></div>'+
- '<div class="b"><span class="k">30d out</span><span class="v">'+fmtK(out)+'</span></div>';}
+async function load(){try{const[mr,ur]=await Promise.all([fetch('/api/models').then(r=>r.ok?r.json():Promise.reject()),fetch('/api/usage').then(r=>r.ok?r.json():Promise.reject())]);MODELS=mr.models;USAGE=ur;renderKpi();initProv();render();}catch(e){}}
+async function loadProv(){try{const r=await fetch('/api/providers');const d=await r.json();PROV=d.providers||[];renderProv();}catch(e){}}
+function renderKpi(){let sp=0,req=0,cache=0;USAGE.forEach(u=>{sp+=u.spend;req+=u.requests;cache+=u.cacheRead;});const hit=cache>0?(cache/sp?null:0):0;$('#kpi').innerHTML=
+'<div class="b"><span class="k">30d spend</span><span class="v g">'+fmtM(sp)+'</span></div>'+
+'<div class="b"><span class="k">requests</span><span class="v">'+fmtK(req)+'</span></div>'+
+'<div class="b"><span class="k">cache reads</span><span class="v">'+fmtK(cache)+'</span></div>'+
+'<div class="b"><span class="k">models</span><span class="v">'+MODELS.length+'</span></div>';}
+function renderProv(){$('#prov-cnt').textContent=PROV.length+' providers';let h='';PROV.forEach(p=>{let st,stc;if(p.measurable){st='real';stc='real';}else if(p.costModel==='flat-subscription'){st='flat';stc='flat';}else if(p.note&&p.note.includes('logged-in')){st='login';stc='wait';}else{st='locked';stc='lock';}const cost=p.totalCost!=null?fmtM(p.totalCost):(p.costModel==='flat-subscription'?(p.flatFeeMonthly?fmtM(p.flatFeeMonthly)+'/mo':'—'):'—');h+='<div class="prov"><div class="name">'+p.name+'<span class="st '+stc+'">'+(p.measurable?'real':st)+'</span></div><div class="cost">'+cost+'</div><div class="note">'+p.note+'</div></div>';});$('#prov-grid').innerHTML=h;$('#prov-note').textContent='Green = actual billed per-model data pulled. Amber = flat subscription, only the flat fee is real. Blue = per-request cost exists but needs your logged-in session. Red = per-model cost hidden and not measurable. No number is invented for any provider.';}
 function initProv(){const pv=new Set();MODELS.forEach(m=>{const p=(m.id||'').split('/')[0];if(p)pv.add(p);});$('#prov').innerHTML='<option value="">all providers</option>'+[...pv].sort().map(p=>'<option>'+p+'</option>').join('');}
-function getMix(){return{cached:+$('#cached').value};}
 let reasonFilter='yes';
 function catRows(){const q=($('#q').value||'').toLowerCase(),prov=$('#prov').value;return MODELS.filter(m=>{if(q&&!(m.id||'').toLowerCase().includes(q)&&!(m.name||'').toLowerCase().includes(q))return false;if(prov&&(m.id||'').split('/')[0]!==prov)return false;if(reasonFilter==='yes'&&!m.reasoning)return false;return true;});}
-function render(){renderRecs();renderCat();}
+function render(){renderRecs();renderCat();renderVerdict();}
 async function renderRecs(){try{const r=await fetch('/api/recommend?reasoning='+(recReasoning?'on':'off'));if(!r.ok)return;const d=await r.json();renderRecsTable(d.recs);}catch(e){}}
-function renderRecsTable(recs){$('#rec-cnt').textContent=recs.length+' switches';let h='';recs.slice(0,12).forEach(r=>{const hit=(r.hitRate*100).toFixed(0)+'%';h+='<tr><td class="mono"><span class="from">'+r.current.split('/').pop()+'</span> <span class="to">→ '+r.best.model.split('/').pop()+'</span></td><td class="num">'+fmtM(r.spend)+'</td><td class="num">'+fmtK(r.requests)+'</td><td class="num hit">'+hit+'</td><td class="num sav">'+fmtM(r.best.saving)+' <span class="pct">('+(r.best.savingPct).toFixed(0)+'%)</span></td><td class="num tiny">'+r.currentCacheRead+'→'+r.best.cacheRead+'</td></tr>';});$('#rec-body').innerHTML=h||'<tr><td colspan=6 class="tiny">no cheaper model clears your bar</td></tr>';}
+function renderRecsTable(recs){$('#rec-cnt').textContent=recs.length+' switches';let h='';recs.slice(0,12).forEach(r=>{const hit=(r.hitRate*100).toFixed(0)+'%';h+='<tr><td class="mono"><span class="from">'+r.current.split('/').pop()+'</span> <span class="to">→ '+r.best.model.split('/').pop()+'</span></td><td class="num">'+fmtM(r.spend)+'</td><td class="num">'+fmtK(r.requests)+'</td><td class="num hit">'+hit+'</td><td class="num sav">'+fmtM(r.best.saving)+'</td></tr>';});$('#rec-body').innerHTML=h||'<tr><td colspan=5 class="tiny">no cheaper model clears your bar</td></tr>';}
 function renderCat(){const rows=catRows();$('#cat-cnt').textContent=rows.length+' shown';let h='';rows.slice(0,120).forEach(m=>{const p=m.pricing||{};const cr=perM(p.input_cache_read),pr=perM(p.prompt),co=perM(p.completion);const isCur=m.id==='deepseek/deepseek-v4-flash-0731';h+='<tr class="'+(isCur?'hl':'')+'"><td class="mono">'+m.id.split('/').pop()+'</td><td class="num">$'+fmt(cr)+'</td><td class="num">$'+fmt(pr)+'</td><td class="num">$'+fmt(co)+'</td><td class="num">$'+(cr==null?'-':(80*cr/1000).toFixed(4))+'</td><td class="num">'+fmtK(m.context_length||0)+'</td></tr>';});$('#cat-body').innerHTML=h;}
+function renderVerdict(){const nous=PROV.find(p=>p.id==='nous-portal');if(!nous||!nous.totalCost)return;const best=nous.models.slice().sort((a,b)=>a.cost-b.cost)[0];$('#verdict').innerHTML='<b>Fleet simulation is Nous-real.</b> Only Nous exposes actual per-model billing. Total real spend <b>'+fmtM(nous.totalCost)+'</b>. Grok is a flat '+fmtM(9.9)+'/mo subscription, Claude and Kimi are flat and not measurable per model, and Command Code awaits your logged-in session. No simulated per-token number is fabricated for subscription providers.';}
 $('#q').addEventListener('input',render);$('#prov').addEventListener('change',render);
 $('#cached').addEventListener('input',()=>{$('#cached-v').textContent=Math.round($('#cached').value)+'k';render();});
 document.querySelectorAll('#reason-tgl button').forEach(b=>b.addEventListener('click',()=>{reasonFilter=b.dataset.v;recReasoning=(b.dataset.v==='yes');document.querySelectorAll('#reason-tgl button').forEach(x=>x.classList.remove('on'));b.classList.add('on');render();}));
-load();setInterval(load,120000);
+load();loadProv();setInterval(()=>{load();loadProv();},120000);
 </script></body></html>
