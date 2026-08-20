@@ -56,7 +56,7 @@ tr.me td{background:rgba(216,176,106,.07)}
 .cnt{color:var(--muted);font-size:12px}
 .note{color:var(--muted);font-size:11px;margin-top:12px;line-height:1.7}
 </style></head><body><div class="wrap">
-<div class="hd"><h1>Model Scoreboard</h1><div class="lang"><button id="l-en" class="on">EN</button><button id="l-ko">한국어</button></div></div>
+<div class="hd"><h1>Model Scoreboard</h1><div class="lang"><button id="l-en" class="on">EN</button><button id="l-ko">한국어</button><button id="reset" style="margin-left:12px;padding:6px 12px;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:6px;font-size:12px;cursor:pointer">Reset to Defaults</button></div></div>
 <div class="sub" id="sub">Pick your yardstick, rank models by intelligence over cost, judge in seconds.</div>
 
 <div class="bar">
@@ -72,7 +72,7 @@ tr.me td{background:rgba(216,176,106,.07)}
 <span class="lbl">out k</span><input type="range" id="out" min="0" max="64" step="1" value="4"><span class="rv" id="out-v">4k</span>
 <input type="text" id="q" placeholder="search">
 <select id="sort"><option value="ratio">sort score/cost</option><option value="intel">sort score</option><option value="cost">sort cost</option></select>
-<div class="tgl" id="reason-tgl"><button class="on" data-v="all">all</button><button data-v="yes">reason</button><button data-v="no">non</button></div>
+<div class="tgl" id="reason-tgl"><div class="tgl" id="provider-tgl"><button class="on" data-v="all">all</button><button data-v="commandcode">CommandCode</button><button data-v="nous">Nous</button></div><button class="on" data-v="all">all</button><button data-v="yes">reason</button><button data-v="no">non</button></div>
 </div>
 
 <div class="card verdict" id="verdict-card" style="display:none">
@@ -112,32 +112,45 @@ const T={
 async function load(){try{const c=$('#cached').value,f=$('#fresh').value,o=$('#out').value,m=$('#metric').value;const r=await fetch('/api/scoreboard?cached='+c+'&fresh='+f+'&out='+o+'&metric='+m);if(!r.ok)throw 0;const d=await r.json();ROWS=d.rows||[];render();}catch(e){}}
 let sortKey='ratio';
 function setSort(k){sortKey=k;render();}
-function filtered(){const q=($('#q').value||'').toLowerCase();const rv=document.querySelector('#reason-tgl button.on').dataset.v;return ROWS.filter(m=>{if(q&&!(m.id||'').toLowerCase().includes(q)&&!(m.name||'').toLowerCase().includes(q))return false;if(rv==='yes'&&!m.reasoning)return false;if(rv==='no'&&m.reasoning)return false;return true;});}
-function fill(t,v){return t.split('{s}').join(v.s).split('{c}').join(v.c).split('{m}').join(v.m).split('{top}').join(v.top).split('{u}').join(v.u);}
-function render(){
- const lang=LANG;const mt=$('#metric').value;
- $('#sub').textContent=T.sub[lang];
- const rows=filtered().slice();rows.sort((a,b)=>{if(sortKey==='ratio'){const ar=a.ratio==null?-1:a.ratio,br=b.ratio==null?-1:b.ratio;return br-ar;}if(sortKey==='intel')return b.score-a.score;if(sortKey==='cost')return a.cost-b.cost;if(sortKey==='ctx')return b.ctx-a.ctx;return 0;});
- $('#cnt').textContent=rows.length+' of '+ROWS.length+' scored';
- const maxSc=Math.max(...rows.map(r=>r.score).filter(n=>!isNaN(n)),1);
- let h='';rows.forEach((r,i)=>{const isMe=r.id==='deepseek/deepseek-v4-flash-0731';const ratioText=r.ratio==null?'<span class="note">free</span>':r.ratio.toLocaleString(undefined,{maximumFractionDigits:0});const barW=Math.max(6,(r.score/maxSc)*100);const tags=(isMe?'<span class="tag me">'+T.yours[lang]+'</span>':'')+(r.free?'<span class="tag free">free</span>':'');h+='<tr class="'+(isMe?'me':'')+'"><td class="num" style="color:var(--muted)">'+(i+1)+'</td><td class="mono">'+r.id.split('/').pop()+tags+'</td><td class="num"><div class="score-col"><div class="score-bar" style="width:'+barW+'%"></div>'+r.score.toFixed(1)+'</div></td><td class="num">'+fmtMoney(r.cost)+'</td><td class="num '+(r.ratio!=null&&r.ratio>10000?'ratio':'ratio-w')+'">'+ratioText+'</td><td class="num">'+fmtK(r.ctx)+'</td></tr>';});$('#body').innerHTML=h;
- const me=rows.find(r=>r.id==='deepseek/deepseek-v4-flash-0731');
- const vc=$('#verdict-card');
- if(me){vc.style.display='block';
-  const mn=T.metricName[lang][mt]||T.metricName[lang].intelligence;
-  $('#v-name').innerHTML=me.id.split('/').pop()+'<span class="tag">'+T.yours[lang]+'</span>';
-  $('#v-score').textContent=T.scorebar[lang]+' '+me.score.toFixed(1);
-  const pos=Math.min(97,Math.max(3,me.score));
-  $('#v-fill').style.width=pos+'%';$('#v-dot').style.left=pos+'%';
-  $('#s0').textContent='0';$('#s100').textContent='100';
-  T.lm[lang].forEach((x,i)=>$('#lm'+(i+1)).textContent=x);
-  $('#v-sent').innerHTML=fill(T.sent[lang],{s:me.score.toFixed(1),m:mn,c:fmtMoney(me.cost),top:T.top[lang],u:'https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index'});
-  $('#v-mini').innerHTML=T.mini[lang].map(x=>fill(x,{s:me.score.toFixed(1),m:mn,c:fmtMoney(me.cost),top:T.top[lang],u:'#'})).join('');
-  $('#v-detail').innerHTML=fill(T.detail[lang],{s:me.score.toFixed(1),m:mn,c:fmtMoney(me.cost),top:'',u:'https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index'});
-  $('#v-toggle').textContent=T.toggle[lang];
- }else{vc.style.display='none';}
+
+let providerFilter = 'all';
+function filtered(){
+  const q=($('#q').value||'').toLowerCase();const rv=document.querySelector('#reason-tgl button.on').dataset.v;const pv=providerFilter||'all';
+  return ROWS.filter(m=>{
+    if(q&&!(m.id||'').toLowerCase().includes(q)&&!(m.name||'').toLowerCase().includes(q))return false;
+    if(rv==='yes'&&!m.reasoning)return false;
+    if(rv==='no'&&m.reasoning)return false;
+    if(pv!=='all' && m.provider !== pv) return false;
+    return true;
+  });
 }
-$('#metric').addEventListener('change',load);$('#cached').addEventListener('input',()=>{$('#cached-v').textContent=Math.round($('#cached').value)+'k';load();});
+$('#metric').addEventListener('change',load);$('#cached').addEventListener('input',()=>{$('#cached-v').textContent=Math.round($('#cached').value)+'k';
+function resetToDefaults(){
+  $('#cached').value=80;$('#cached-v').textContent='80k';
+  $('#fresh').value=4;$('#fresh-v').textContent='4k';
+  $('#out').value=4;$('#out-v').textContent='4k';
+  $('#metric').value='intelligence';
+  $('#q').value='';
+  $('#sort').value='ratio';
+  document.querySelectorAll('#reason-tgl button').forEach(b=>{b.classList.toggle('on', b.dataset.v==='all');});
+  providerFilter = 'all';
+  document.querySelectorAll('#provider-tgl button').forEach(b=>{b.classList.toggle('on', b.dataset.v==='all');});
+  LANG='en';
+  $('#l-en').classList.add('on');$('#l-ko').classList.remove('on');
+  
+document.querySelectorAll('#provider-tgl button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#provider-tgl button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  providerFilter = b.dataset.v;
+  render();
+}));
+providerFilter = 'all';
+
+load();
+}
+
+$("#reset").addEventListener("click",resetToDefaults);
+load();});
 $('#fresh').addEventListener('input',()=>{$('#fresh-v').textContent=Math.round($('#fresh').value)+'k';load();});
 $('#out').addEventListener('input',()=>{$('#out-v').textContent=Math.round($('#out').value)+'k';load();});
 $('#q').addEventListener('input',render);$('#sort').addEventListener('change',e=>setSort(e.target.value));

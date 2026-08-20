@@ -57,6 +57,8 @@ export function scoreboard(catalog, opts = {}) {
       reasoning: !!m.reasoning,
       cacheRead: cr,
       free,
+      provider: 'nous',
+
     };
   }).filter(Boolean);
   return rows;
