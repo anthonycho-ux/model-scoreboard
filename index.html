@@ -1,169 +1,271 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Model Scoreboard</title>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Model Scoreboard</title>
 <style>
-:root{--bg:#14171c;--panel:#1d2129;--panel2:#232833;--line:#2a2f3a;--blue:#3b6df0;--amber:#d8b06a;--muted:#9aa3b2;--text:#e8ecf1;--green:#6fdc9b;--red:#e06a6a}
+:root{--bg:#0f1114;--panel:#171b22;--panel2:#1d222b;--line:#2a2f3a;--blue:#3b6df0;--amber:#d8b06a;--muted:#8b93a1;--text:#e8ecf1;--green:#6fdc9b;--red:#e06a6a}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Segoe UI',Roboto,Arial,sans-serif;line-height:1.45;padding:20px 24px;font-size:13px}
-.wrap{max-width:1240px;margin:0 auto}
-.hd{display:flex;align-items:center;gap:12px;margin-bottom:4px;flex-wrap:wrap}
-h1{font-size:20px}
-.sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;line-height:1.4;padding:24px 28px 40px;font-size:14px}
+.wrap{max-width:920px;margin:0 auto}
+.hd{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.kicker{color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
 .lang{display:flex;gap:2px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px;margin-left:auto}
-.lang button{border:none;background:transparent;color:var(--muted);padding:4px 12px;border-radius:5px;font-size:12px;cursor:pointer}
+.lang button,#reset,.more-t{border:none;background:transparent;color:var(--muted);padding:4px 12px;border-radius:5px;font-size:12px;cursor:pointer}
 .lang button.on{background:var(--blue);color:#fff}
-#reset{margin-left:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer}
-#reset:hover{background:rgba(59,109,240,.12)}
-.bar{display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:14px;flex-wrap:wrap}
-.bar .lbl{color:var(--muted);font-size:11px}.bar input[type=range]{width:100px;accent-color:var(--blue)}
-.bar .rv{color:var(--amber);font-weight:600;font-size:11px;width:32px}
-.bar select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 6px;font-size:12px}
-.bar input[type=text]{flex:1;min-width:110px;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 8px;font-size:12px}
+#reset{border:1px solid var(--line);background:var(--panel2);color:var(--text)}
+.hero{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px 20px;margin-bottom:12px;display:grid;grid-template-columns:1fr auto;gap:6px 24px;align-items:end}
+.verdict{font-size:13px;color:var(--amber);font-weight:600;letter-spacing:.04em;grid-column:1/-1}
+.name{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.why{color:var(--muted);font-size:15px;max-width:36em;margin-top:6px}
+.num{font-family:ui-monospace,Menlo,monospace;text-align:right}
+.num .big{font-size:40px;font-weight:700;color:var(--green);letter-spacing:-.04em;line-height:1}
+.num .unit{color:var(--muted);font-size:12px;margin-top:4px}
+.acts{grid-column:1/-1;display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.btn{border:0;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;font-weight:600}
+.btn.keep{background:var(--green);color:#102016}
+.btn.up{background:transparent;color:var(--text);border:1px solid var(--line)}
+.trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tile.on{border-color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber)}
+.tile .lab{font-size:11px;color:var(--muted);margin-bottom:6px}
+.tile .m{font-size:15px;font-weight:700}
+.tile .s{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted);margin-top:6px}
+.tile .s b{color:var(--text);font-weight:600}
+.tile .skip{color:var(--red);font-size:11px;margin-top:8px}
+.tile .go{color:var(--green);font-size:11px;margin-top:8px}
+.bar{display:flex;gap:8px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:999px;padding:5px 12px;font-size:12px;cursor:pointer}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.bar input[type=text]{flex:1;min-width:120px;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:6px 12px;font-size:12px}
+.more{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px;flex-wrap:wrap;gap:8px;align-items:center}
+.more.on{display:flex}
+.more .lbl{color:var(--muted);font-size:11px}
+.more input[type=range]{width:90px;accent-color:var(--blue)}
+.more .rv{color:var(--amber);font-weight:600;font-size:11px;width:32px}
+.more select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:5px;padding:5px 6px;font-size:12px}
 .tgl{display:flex;gap:2px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px}
 .tgl button{border:none;background:transparent;color:var(--muted);padding:4px 9px;border-radius:5px;font-size:11px;cursor:pointer}
-.tgl button.on{background:var(--blue);color:#fff}.bar .spacer{flex:1}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px 20px;margin-bottom:16px}
-/* verdict card */
-.verdict .row1{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-.verdict .name{font-size:16px;font-weight:700}
-.verdict .name .tag{display:inline-block;font-size:11px;padding:2px 9px;border-radius:9px;margin-left:8px;background:var(--amber);color:#14171c;vertical-align:middle}
-.verdict .score-h{font-size:20px;font-weight:700;color:var(--green)}
-.verdict .sent{font-size:14px;line-height:1.8;margin-bottom:14px}
-.verdict .sent b{color:var(--green)}
-.verdict .sent .dim{color:var(--muted)}
-.scale{margin-bottom:6px}
-.scale .lbl{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-bottom:4px}
-.scale .track{height:12px;background:var(--line);border-radius:6px;position:relative}
-.scale .fill{height:12px;background:var(--blue);border-radius:6px}
-.scale .dot{position:absolute;top:-4px;width:20px;height:20px;border-radius:50%;background:var(--amber);border:2px solid #14171c;transform:translateX(-50%)}
-.landmarks{display:flex;justify-content:space-between;color:var(--muted);font-size:10px;margin-top:4px}
-.landmarks span{flex:1;text-align:center}
-.row-mini{display:flex;gap:18px;align-items:center;margin-top:10px;color:var(--muted);font-size:12px;flex-wrap:wrap}
-.row-mini b{color:var(--text);font-variant-numeric:tabular-nums}
-.row-mini .good{color:var(--green);font-weight:600}
-.detail-toggle{background:none;border:1px solid var(--line);color:var(--blue);border-radius:6px;padding:6px 12px;font-size:12px;cursor:pointer;margin-top:12px}
-.detail-toggle:hover{background:rgba(59,109,240,.1)}
-.detail{display:none;color:var(--muted);font-size:12px;line-height:1.8;border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
-.detail.on{display:block}
-.detail a{color:var(--blue)}
-/* table */
+.tgl button.on{background:var(--blue);color:#fff}
+.cnt{color:var(--muted);font-size:12px;margin-bottom:8px}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;color:var(--muted);font-weight:600;padding:7px 10px;border-bottom:1px solid var(--line);font-size:11px;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;user-select:none;white-space:nowrap}
-th.num{text-align:right}td{padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
-td.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}td.num{text-align:right}
-tr.me td{background:rgba(216,176,106,.07)}
-.ratio{font-weight:700;color:var(--green)}.ratio-w{font-weight:700;color:var(--amber)}
+th{text-align:left;color:var(--muted);font-weight:600;padding:7px 8px;border-bottom:1px solid var(--line);font-size:10px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none}
+th.n,td.n{text-align:right;font-family:ui-monospace,Menlo,monospace}
+td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr.me td{background:rgba(216,176,106,.08)}
 .tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:9px;margin-left:6px;vertical-align:middle}
-.tag.me{background:var(--amber);color:#14171c}.tag.free{background:var(--green);color:#14171c}.tag.cc{background:#3b6df0;color:#fff}
-.score-col{display:flex;align-items:center;gap:8px;justify-content:flex-end}
-.score-bar{height:7px;border-radius:3px;min-width:50px;background:var(--line)}
-.cnt{color:var(--muted);font-size:12px}
-.note{color:var(--muted);font-size:11px;margin-top:12px;line-height:1.7}
+.tag.me{background:var(--amber);color:#14171c}
+.tag.cc{background:var(--blue);color:#fff}
+.tag.free{background:var(--green);color:#14171c}
+.foot{color:var(--muted);font-size:11px;margin-top:12px;line-height:1.7}
+.note{color:var(--muted);font-size:11px}
 </style></head><body><div class="wrap">
-<div class="hd"><h1>Model Scoreboard</h1><div class="lang"><button id="l-en" class="on">EN</button><button id="l-ko">한국어</button></div><button id="reset" type="button">Reset to Defaults</button></div>
-<div class="sub" id="sub">Pick your yardstick, rank models by intelligence over cost, judge in seconds.</div>
+<div class="hd"><div class="kicker">Model Scoreboard</div><div class="lang"><button id="l-en">EN</button><button id="l-ko" class="on">한국어</button></div><button id="reset" type="button">Reset</button></div>
+
+<div class="hero" id="hero">
+  <div class="verdict" id="v-line"></div>
+  <div>
+    <div class="name" id="v-name"></div>
+    <div class="why" id="v-why"></div>
+  </div>
+  <div class="num"><div class="big" id="v-score"></div><div class="unit" id="v-unit"></div></div>
+  <div class="acts">
+    <button class="btn keep" id="b-keep" type="button"></button>
+    <button class="btn up" id="b-up" type="button"></button>
+  </div>
+</div>
+
+<div class="trio" id="trio"></div>
 
 <div class="bar">
-<span class="lbl">metric</span>
-<select id="metric">
-<option value="composite">composite index</option>
-<option value="intelligence" selected>intelligence index</option>
-<option value="coding">coding index</option>
-<option value="agentic">agentic index</option>
-</select>
-<span class="lbl">cache k</span><input type="range" id="cached" min="0" max="200" step="4" value="80"><span class="rv" id="cached-v">80k</span>
-<span class="lbl">fresh k</span><input type="range" id="fresh" min="0" max="64" step="1" value="4"><span class="rv" id="fresh-v">4k</span>
-<span class="lbl">out k</span><input type="range" id="out" min="0" max="64" step="1" value="4"><span class="rv" id="out-v">4k</span>
-<input type="text" id="q" placeholder="search">
-<select id="sort"><option value="ratio">sort score/cost</option><option value="intel">sort score</option><option value="cost">sort cost</option></select>
-<div class="tgl" id="reason-tgl"><button class="on" data-v="all">all</button><button data-v="yes">reason</button><button data-v="no">non</button></div>
-<div class="tgl" id="provider-tgl"><button class="on" data-v="nous">Nous</button><button class="on" data-v="commandcode">CommandCode</button></div>
+  <button type="button" class="chip on" data-p="nous" id="c-nous">Nous</button>
+  <button type="button" class="chip on" data-p="commandcode" id="c-cc">CommandCode</button>
+  <button type="button" class="chip on" id="c-floor">49+</button>
+  <input type="text" id="q" placeholder="">
+  <button type="button" class="more-t" id="more-t"></button>
+</div>
+<div class="more" id="more">
+  <span class="lbl" id="lbl-metric"></span>
+  <select id="metric">
+    <option value="composite">composite</option>
+    <option value="intelligence" selected>intelligence</option>
+    <option value="coding">coding</option>
+    <option value="agentic">agentic</option>
+  </select>
+  <span class="lbl">cache</span><input type="range" id="cached" min="0" max="200" step="4" value="80"><span class="rv" id="cached-v">80k</span>
+  <span class="lbl">fresh</span><input type="range" id="fresh" min="0" max="64" step="1" value="4"><span class="rv" id="fresh-v">4k</span>
+  <span class="lbl">out</span><input type="range" id="out" min="0" max="64" step="1" value="4"><span class="rv" id="out-v">4k</span>
+  <div class="tgl" id="reason-tgl"><button class="on" data-v="all">all</button><button data-v="yes">reason</button><button data-v="no">non</button></div>
 </div>
 
-<div class="card verdict" id="verdict-card" style="display:none">
-<div class="row1"><div class="name" id="v-name"></div><div class="score-h" id="v-score"></div></div>
-<div class="sent" id="v-sent"></div>
-<div class="scale"><div class="lbl"><span id="s0">0</span><span id="s100">100</span></div><div class="track"><div class="fill" id="v-fill"></div><div class="dot" id="v-dot"></div></div></div>
-<div class="landmarks"><span id="lm1"></span><span id="lm2"></span><span id="lm3"></span><span id="lm4"></span></div>
-<div class="row-mini" id="v-mini"></div>
-<button class="detail-toggle" id="v-toggle">details</button>
-<div class="detail" id="v-detail"></div>
-</div>
-
-<div class="card">
-<div class="cnt" id="cnt" style="margin-bottom:8px"></div>
+<div class="cnt" id="cnt"></div>
 <table><thead><tr>
-<th>rank</th><th>model</th><th class="num" onclick="setSort('intel')">score</th><th class="num" onclick="setSort('cost')">cost/call</th><th class="num" onclick="setSort('ratio')">score/cost</th><th class="num" onclick="setSort('ctx')">ctx</th>
+  <th id="th-role"></th><th id="th-model"></th>
+  <th class="n" onclick="setSort('intel')" id="th-score"></th>
+  <th class="n" onclick="setSort('cost')" id="th-cost"></th>
+  <th class="n" onclick="setSort('ratio')" id="th-ratio"></th>
 </tr></thead><tbody id="body"></tbody></table>
-<div class="note" id="foot"></div>
-</div>
+<div class="foot" id="foot"></div>
 </div>
 <script>
-const $=s=>document.querySelector(s);let ROWS=[],LANG='en';
+const $=s=>document.querySelector(s);
+const ME='deepseek/deepseek-v4-flash-0731';
+const FLOOR=49;
+let ROWS=[],LANG='ko',sortKey='intel',floorOn=true;
 const fmtMoney=n=>'$'+(n<0.01?n.toFixed(4):n.toFixed(2));
-const fmtK=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':Math.round(n);
+const short=id=>(id||'').split('/').pop().replace(/:batch$/,'');
+const isBatch=m=>/(:batch)\b/i.test(m.id||'');
+const srcs=m=>m.sources||[m.provider||'nous'];
 const T={
- sub:{en:'Pick your yardstick, rank models by intelligence over cost, judge in seconds.',ko:'측정 기준을 고르고, 비용 대비 지능으로 모델을 줄세워, 몇 초 안에 판단하세요.'},
- yours:{en:'your model',ko:'내 모델'},
- top:{en:'top of board',ko:'보드 1위'},
- sent:{en:'This is <b>your current model</b>. It scores <b>{s}</b> on the {m}, placing it in the <b>top tier</b> of scored models while costing <b>{c}</b> per request. The best intelligence you get per dollar.',ko:'이것은 <b>현재 내 모델</b>입니다. {m}에서 <b>{s}</b>점으로, 평가된 모델 중 <b>상위권</b>에 위치하면서 요청당 비용은 <b>{c}</b>입니다. 돈 대비 가장 좋은 지능을 얻는 모델입니다.'},
- lm:{en:['basic','capable','strong','frontier'],ko:['기본','유능','강력','프런티어']},
- mini:{en:['{m}: <b>{s}</b> / 100','cost: <b>{c}</b> / request','intelligence per dollar: <b>{top}</b>'],ko:['{m}: <b>{s}</b> / 100','비용: <b>{c}</b> / 요청','돈 대비 지능: <b>{top}</b>']},
- detail:{en:'What this means: the {m} blends nine independent tests of reasoning, coding, science, and agent work. Your model sits above most scored models on this scale. Source: <a href="{u}" target="_blank">artificialanalysis.ai</a> · methodology: <a href="{u}" target="_blank">view</a>',ko:'이 숫자의 의미: {m}은 추론, 코딩, 과학, 에이전트 작업을 아우르는 아홉 개 독립 평가를 섞은 값입니다. 내 모델은 이 눈금 위 대부분의 모델보다 위에 있습니다. 출처: <a href="{u}" target="_blank">artificialanalysis.ai</a> · 방법론: <a href="{u}" target="_blank">보기</a>'},
- toggle:{en:'details',ko:'상세 보기'},
- metricName:{en:{composite:'composite index',intelligence:'intelligence index',coding:'coding index',agentic:'agentic index'},ko:{composite:'복합 지수',intelligence:'지능 지수',coding:'코딩 지수',agentic:'에이전트 지수'}},
- scorebar:{en:'intelligence index',ko:'지능 지수'}
+  q:{en:'search',ko:'검색'},
+  more:{en:'cost assumptions',ko:'비용 가정'},
+  metric:{en:'metric',ko:'지표'},
+  keep:{en:'Keep this model',ko:'이 모델 유지'},
+  up:{en:'Smarter · {n} · {c}',ko:'더 똑똑하게 · {n} · {c}'},
+  vKeep:{en:'Do not switch',ko:'지금은 바꾸지 마세요'},
+  vUp:{en:'A smarter option costs more',ko:'더 똑똑한 선택은 비용이 더 듭니다'},
+  whyKeep:{en:'Nothing in this list is both smarter than your model and cheaper for live chat. Cheap leaders below 49 are hidden.',ko:'지금 모델보다 똑똑하면서 더 싼 대화용 모델은 없습니다. 49점 아래의 싼 1등은 숨겼습니다.'},
+  whyUp:{en:'A live-chat model is smarter than yours. It costs more per request.',ko:'지금보다 똑똑한 대화용 모델이 있습니다. 요청당 비용은 더 듭니다.'},
+  whyGone:{en:'Your model is hidden by the current filter. Ranking changed; this card did not.',ko:'필터 때문에 내 모델이 목록에서 빠졌습니다. 순위만 바뀌었고, 이 카드는 그대로입니다.'},
+  unit:{en:'intelligence · {c} / request',ko:'지능 · 요청 {c}'},
+  tHide:{en:'Hidden · below 49',ko:'숨김 · 49 미만'},
+  tNow:{en:'Now',ko:'지금'},
+  tUp:{en:'Smarter · costs more',ko:'더 똑똑 · 더 비쌈'},
+  tStrong:{en:'Highest score',ko:'최강'},
+  skip:{en:'Not the pick.',ko:'고르지 않음.'},
+  goNow:{en:'Best balance for chat.',ko:'대화용으로 가장 균형.'},
+  goUp:{en:'Pay more to go here.',ko:'비용을 올리면 여기.'},
+  role:{en:'role',ko:'역할'},
+  model:{en:'model',ko:'모델'},
+  score:{en:'score',ko:'지능'},
+  cost:{en:'cost',ko:'요청'},
+  ratio:{en:'score/cost',ko:'지능/비용'},
+  yours:{en:'yours',ko:'내 모델'},
+  hidden:{en:'{n} models below 49 hidden',ko:'49 미만 {n}개 숨김'},
+  cnt:{en:'{n} of {t} scored',ko:'평가 {t}개 중 {n}개'},
+  foot:{en:'Batch (offline) models are left out of this chat ranking. Same numbers as before.',ko:'묶음 처리(batch) 모델은 대화용 순위에서 뺐습니다. 숫자는 기존과 같습니다.'},
+  rNow:{en:'now',ko:'지금'},
+  rUp:{en:'upgrade',ko:'업그레이드'},
+  rTop:{en:'top',ko:'최강'},
+  rRest:{en:'',ko:''}
 };
-async function load(){try{const c=$('#cached').value,f=$('#fresh').value,o=$('#out').value,m=$('#metric').value;const r=await fetch('/api/scoreboard?cached='+c+'&fresh='+f+'&out='+o+'&metric='+m);if(!r.ok)throw 0;const d=await r.json();ROWS=d.rows||[];render();}catch(e){}}
-let sortKey='ratio';
+function fill(t,v){return t.replace('{n}',v.n||'').replace('{c}',v.c||'').replace('{t}',v.t||'');}
+function providerOn(){return [...document.querySelectorAll('.chip[data-p].on')].map(b=>b.dataset.p);}
+function filtered(){
+  const q=($('#q').value||'').toLowerCase();
+  const rv=document.querySelector('#reason-tgl button.on').dataset.v;
+  const sel=providerOn();
+  return ROWS.filter(m=>{
+    if(q&&!(m.id||'').toLowerCase().includes(q)&&!(m.name||'').toLowerCase().includes(q))return false;
+    if(rv==='yes'&&!m.reasoning)return false;
+    if(rv==='no'&&m.reasoning)return false;
+    if(sel.length){if(!sel.some(s=>srcs(m).includes(s)))return false;}
+    if(floorOn&&(m.score||0)<FLOOR)return false;
+    if(isBatch(m))return false;
+    return true;
+  });
+}
+function livePool(rows){return rows.filter(m=>!isBatch(m));}
+function picks(rows){
+  const live=livePool(rows);
+  const meAll=ROWS.find(r=>r.id===ME);
+  const meIn=rows.find(r=>r.id===ME);
+  const me=meAll;
+  const base=me?me.score:0;
+  const smarter=live.filter(m=>m.id!==ME&&m.score>base).sort((a,b)=>a.cost-b.cost);
+  const upgrade=smarter.find(m=>m.score>=base+4)||smarter[0]||null;
+  const strongest=[...live].sort((a,b)=>b.score-a.score)[0]||null;
+  const cheaperSmarter=smarter.some(m=>me&&m.cost<me.cost);
+  return {me,meIn,upgrade,strongest,keep:!cheaperSmarter,hidden:ROWS.length-rows.length};
+}
+async function load(){
+  try{
+    const c=$('#cached').value,f=$('#fresh').value,o=$('#out').value,m=$('#metric').value;
+    const r=await fetch('/api/scoreboard?cached='+c+'&fresh='+f+'&out='+o+'&metric='+m);
+    if(!r.ok)throw 0;
+    const d=await r.json();ROWS=d.rows||[];render();
+  }catch(e){}
+}
 function setSort(k){sortKey=k;render();}
-function providerOn(){return [...document.querySelectorAll('#provider-tgl button.on')].map(b=>b.dataset.v);}
-function filtered(){const q=($('#q').value||'').toLowerCase();const rv=document.querySelector('#reason-tgl button.on').dataset.v;const sel=providerOn();return ROWS.filter(m=>{if(q&&!(m.id||'').toLowerCase().includes(q)&&!(m.name||'').toLowerCase().includes(q))return false;if(rv==='yes'&&!m.reasoning)return false;if(rv==='no'&&m.reasoning)return false;if(sel.length){const src=m.sources||[m.provider||'nous'];if(!sel.some(s=>src.includes(s)))return false;}return true;});}
 function resetToDefaults(){
- $('#cached').value=80;$('#cached-v').textContent='80k';
- $('#fresh').value=4;$('#fresh-v').textContent='4k';
- $('#out').value=4;$('#out-v').textContent='4k';
- $('#metric').value='intelligence';
- $('#q').value='';
- $('#sort').value='ratio';sortKey='ratio';
- document.querySelectorAll('#reason-tgl button').forEach(b=>b.classList.toggle('on', b.dataset.v==='all'));
- document.querySelectorAll('#provider-tgl button').forEach(b=>b.classList.add('on'));
- LANG='en';$('#l-en').classList.add('on');$('#l-ko').classList.remove('on');
- load();
+  $('#cached').value=80;$('#cached-v').textContent='80k';
+  $('#fresh').value=4;$('#fresh-v').textContent='4k';
+  $('#out').value=4;$('#out-v').textContent='4k';
+  $('#metric').value='intelligence';
+  $('#q').value='';
+  sortKey='intel';
+  floorOn=true;$('#c-floor').classList.add('on');
+  document.querySelectorAll('#reason-tgl button').forEach(b=>b.classList.toggle('on',b.dataset.v==='all'));
+  document.querySelectorAll('.chip[data-p]').forEach(b=>b.classList.add('on'));
+  LANG='ko';$('#l-ko').classList.add('on');$('#l-en').classList.remove('on');
+  load();
 }
-function fill(t,v){return t.split('{s}').join(v.s).split('{c}').join(v.c).split('{m}').join(v.m).split('{top}').join(v.top).split('{u}').join(v.u);}
 function render(){
- const lang=LANG;const mt=$('#metric').value;
- $('#sub').textContent=T.sub[lang];
- const rows=filtered().slice();rows.sort((a,b)=>{if(sortKey==='ratio'){const ar=a.ratio==null?-1:a.ratio,br=b.ratio==null?-1:b.ratio;return br-ar;}if(sortKey==='intel')return b.score-a.score;if(sortKey==='cost')return a.cost-b.cost;if(sortKey==='ctx')return b.ctx-a.ctx;return 0;});
- const ccN=ROWS.filter(r=>(r.sources||[]).includes('commandcode')).length; $('#cnt').textContent=rows.length+' of '+ROWS.length+' scored'+(ccN?(' · '+ccN+' on CommandCode'):'');
- const maxSc=Math.max(...rows.map(r=>r.score).filter(n=>!isNaN(n)),1);
- let h='';rows.forEach((r,i)=>{const isMe=r.id==='deepseek/deepseek-v4-flash-0731';const ratioText=r.ratio==null?'<span class="note">free</span>':r.ratio.toLocaleString(undefined,{maximumFractionDigits:0});const barW=Math.max(6,(r.score/maxSc)*100);const onCc=(r.sources||[]).includes('commandcode'); const tags=(isMe?'<span class="tag me">'+T.yours[lang]+'</span>':'')+(r.free?'<span class="tag free">free</span>':'')+(onCc?'<span class="tag cc">CC</span>':'');h+='<tr class="'+(isMe?'me':'')+'"><td class="num" style="color:var(--muted)">'+(i+1)+'</td><td class="mono">'+r.id.split('/').pop()+tags+'</td><td class="num"><div class="score-col"><div class="score-bar" style="width:'+barW+'%"></div>'+r.score.toFixed(1)+'</div></td><td class="num">'+fmtMoney(r.cost)+'</td><td class="num '+(r.ratio!=null&&r.ratio>10000?'ratio':'ratio-w')+'">'+ratioText+'</td><td class="num">'+fmtK(r.ctx)+'</td></tr>';});$('#body').innerHTML=h;
- const me=rows.find(r=>r.id==='deepseek/deepseek-v4-flash-0731');
- const vc=$('#verdict-card');
- if(me){vc.style.display='block';
-  const mn=T.metricName[lang][mt]||T.metricName[lang].intelligence;
-  $('#v-name').innerHTML=me.id.split('/').pop()+'<span class="tag">'+T.yours[lang]+'</span>';
-  $('#v-score').textContent=T.scorebar[lang]+' '+me.score.toFixed(1);
-  const pos=Math.min(97,Math.max(3,me.score));
-  $('#v-fill').style.width=pos+'%';$('#v-dot').style.left=pos+'%';
-  $('#s0').textContent='0';$('#s100').textContent='100';
-  T.lm[lang].forEach((x,i)=>$('#lm'+(i+1)).textContent=x);
-  $('#v-sent').innerHTML=fill(T.sent[lang],{s:me.score.toFixed(1),m:mn,c:fmtMoney(me.cost),top:T.top[lang],u:'https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index'});
-  $('#v-mini').innerHTML=T.mini[lang].map(x=>fill(x,{s:me.score.toFixed(1),m:mn,c:fmtMoney(me.cost),top:T.top[lang],u:'#'})).join('');
-  $('#v-detail').innerHTML=fill(T.detail[lang],{s:me.score.toFixed(1),m:mn,c:fmtMoney(me.cost),top:'',u:'https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index'});
-  $('#v-toggle').textContent=T.toggle[lang];
- }else{vc.style.display='none';}
+  const lang=LANG;
+  $('#q').placeholder=T.q[lang];
+  $('#more-t').textContent=T.more[lang];
+  $('#lbl-metric').textContent=T.metric[lang];
+  $('#th-role').textContent=T.role[lang];
+  $('#th-model').textContent=T.model[lang];
+  $('#th-score').textContent=T.score[lang];
+  $('#th-cost').textContent=T.cost[lang];
+  $('#th-ratio').textContent=T.ratio[lang];
+  $('#foot').textContent=T.foot[lang];
+  const rows=filtered().slice();
+  rows.sort((a,b)=>{
+    if(sortKey==='ratio'){const ar=a.ratio==null?-1:a.ratio,br=b.ratio==null?-1:b.ratio;return br-ar;}
+    if(sortKey==='intel')return b.score-a.score;
+    if(sortKey==='cost')return a.cost-b.cost;
+    return 0;
+  });
+  const p=picks(rows);
+  const me=p.me;
+  const keep=p.keep||!p.upgrade;
+  $('#v-line').textContent=keep?T.vKeep[lang]:T.vUp[lang];
+  $('#v-name').textContent=me?short(me.id):'—';
+  let why=keep?T.whyKeep[lang]:T.whyUp[lang];
+  if(me&&!p.meIn)why=T.whyGone[lang];
+  $('#v-why').textContent=why;
+  $('#v-score').textContent=me?me.score.toFixed(1):'—';
+  $('#v-unit').textContent=fill(T.unit[lang],{c:me?fmtMoney(me.cost):'—'});
+  $('#b-keep').textContent=T.keep[lang];
+  if(p.upgrade){
+    $('#b-up').style.display='inline-block';
+    $('#b-up').textContent=fill(T.up[lang],{n:short(p.upgrade.id),c:fmtMoney(p.upgrade.cost)});
+  }else{$('#b-up').style.display='none';}
+
+  const below=ROWS.filter(m=>(m.score||0)<FLOOR).length;
+  const hideN=floorOn?below:0;
+  const leftTitle=floorOn?T.tHide[lang]:T.tHide[lang];
+  const leftName=floorOn?fill(T.hidden[lang],{n:String(below)}): (ROWS.filter(m=>(m.score||0)<FLOOR).sort((a,b)=>(b.ratio||0)-(a.ratio||0))[0]||{}).id;
+  const trio=[
+    {lab:T.tHide[lang],m:floorOn?fill(T.hidden[lang],{n:String(below)}):short(leftName||''),s:floorOn?'':'',cls:'skip',note:T.skip[lang],on:false},
+    {lab:T.tNow[lang],m:me?short(me.id):'—',s:me?'<b>'+me.score.toFixed(1)+'</b> · '+fmtMoney(me.cost):'',cls:'go',note:T.goNow[lang],on:true},
+    {lab:p.upgrade?T.tUp[lang]:T.tStrong[lang],m:p.upgrade?short(p.upgrade.id):(p.strongest?short(p.strongest.id):'—'),s:p.upgrade?'<b>'+p.upgrade.score.toFixed(1)+'</b> · '+fmtMoney(p.upgrade.cost):(p.strongest?'<b>'+p.strongest.score.toFixed(1)+'</b> · '+fmtMoney(p.strongest.cost):''),cls:'go',note:T.goUp[lang],on:false}
+  ];
+  $('#trio').innerHTML=trio.map(t=>'<div class="tile'+(t.on?' on':'')+'"><div class="lab">'+t.lab+'</div><div class="m">'+t.m+'</div><div class="s">'+t.s+'</div><div class="'+t.cls+'">'+t.note+'</div></div>').join('');
+
+  $('#cnt').textContent=fill(T.cnt[lang],{n:String(rows.length),t:String(ROWS.length)})+(floorOn?' · 49+':'');
+  let h='';
+  rows.forEach(r=>{
+    const isMe=r.id===ME;
+    const onCc=srcs(r).includes('commandcode');
+    const role=isMe?T.rNow[lang]:(p.upgrade&&r.id===p.upgrade.id?T.rUp[lang]:(p.strongest&&r.id===p.strongest.id?T.rTop[lang]:''));
+    const ratioText=r.ratio==null?'—':Math.round(r.ratio).toLocaleString();
+    const tags=(isMe?'<span class="tag me">'+T.yours[lang]+'</span>':'')+(r.free?'<span class="tag free">free</span>':'')+(onCc?'<span class="tag cc">CC</span>':'')+(isBatch(r)?'<span class="tag">batch</span>':'');
+    h+='<tr class="'+(isMe?'me':'')+'"><td>'+role+'</td><td>'+short(r.id)+tags+'</td><td class="n">'+r.score.toFixed(1)+'</td><td class="n">'+fmtMoney(r.cost)+'</td><td class="n">'+ratioText+'</td></tr>';
+  });
+  $('#body').innerHTML=h;
 }
-$('#metric').addEventListener('change',load);$('#cached').addEventListener('input',()=>{$('#cached-v').textContent=Math.round($('#cached').value)+'k';load();});
+$('#metric').addEventListener('change',load);
+$('#cached').addEventListener('input',()=>{$('#cached-v').textContent=Math.round($('#cached').value)+'k';load();});
 $('#fresh').addEventListener('input',()=>{$('#fresh-v').textContent=Math.round($('#fresh').value)+'k';load();});
 $('#out').addEventListener('input',()=>{$('#out-v').textContent=Math.round($('#out').value)+'k';load();});
-$('#q').addEventListener('input',render);$('#sort').addEventListener('change',e=>setSort(e.target.value));
+$('#q').addEventListener('input',render);
 document.querySelectorAll('#reason-tgl button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#reason-tgl button').forEach(x=>x.classList.remove('on'));b.classList.add('on');render();}));
-document.querySelectorAll('#provider-tgl button').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('on');render();}));
+document.querySelectorAll('.chip[data-p]').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('on');render();}));
+$('#c-floor').addEventListener('click',()=>{floorOn=!floorOn;$('#c-floor').classList.toggle('on',floorOn);render();});
+$('#more-t').addEventListener('click',()=>$('#more').classList.toggle('on'));
 $('#reset').addEventListener('click',resetToDefaults);
-$('#v-toggle').addEventListener('click',()=>$('#v-detail').classList.toggle('on'));
 $('#l-en').addEventListener('click',()=>{LANG='en';$('#l-en').classList.add('on');$('#l-ko').classList.remove('on');render();});
 $('#l-ko').addEventListener('click',()=>{LANG='ko';$('#l-ko').classList.add('on');$('#l-en').classList.remove('on');render();});
 load();
 </script>
-<div style="text-align:center;padding:14px 8px 22px;color:#5a6270;font-size:11px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;border-top:1px solid #2a2f3a;margin-top:24px">Built and maintained by <strong style="color:#9aa3b2">Sol</strong> (Aside) &middot; last touched 2026-08-13 &middot; <a href="https://github.com/anthonycho-ux" style="color:#5a6270" target="_blank">repo: nous-portal-dashboard</a></div>
+<div style="text-align:center;padding:14px 8px 22px;color:#5a6270;font-size:11px;border-top:1px solid #2a2f3a;margin-top:24px">Built and maintained by <strong style="color:#9aa3b2">Sol</strong> (Aside) &middot; last touched 2026-08-20</div>
 </body></html>
