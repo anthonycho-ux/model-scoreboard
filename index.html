@@ -52,7 +52,7 @@ td.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}td.num{text-alig
 tr.me td{background:rgba(216,176,106,.07)}
 .ratio{font-weight:700;color:var(--green)}.ratio-w{font-weight:700;color:var(--amber)}
 .tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:9px;margin-left:6px;vertical-align:middle}
-.tag.me{background:var(--amber);color:#14171c}.tag.free{background:var(--green);color:#14171c}
+.tag.me{background:var(--amber);color:#14171c}.tag.free{background:var(--green);color:#14171c}.tag.cc{background:#3b6df0;color:#fff}
 .score-col{display:flex;align-items:center;gap:8px;justify-content:flex-end}
 .score-bar{height:7px;border-radius:3px;min-width:50px;background:var(--line)}
 .cnt{color:var(--muted);font-size:12px}
@@ -116,7 +116,7 @@ async function load(){try{const c=$('#cached').value,f=$('#fresh').value,o=$('#o
 let sortKey='ratio';
 function setSort(k){sortKey=k;render();}
 let providerFilter='all';
-function filtered(){const q=($('#q').value||'').toLowerCase();const rv=document.querySelector('#reason-tgl button.on').dataset.v;const pv=providerFilter||'all';return ROWS.filter(m=>{if(q&&!(m.id||'').toLowerCase().includes(q)&&!(m.name||'').toLowerCase().includes(q))return false;if(rv==='yes'&&!m.reasoning)return false;if(rv==='no'&&m.reasoning)return false;if(pv!=='all'&&(m.provider||'nous')!==pv)return false;return true;});}
+function filtered(){const q=($('#q').value||'').toLowerCase();const rv=document.querySelector('#reason-tgl button.on').dataset.v;const pv=providerFilter||'all';return ROWS.filter(m=>{if(q&&!(m.id||'').toLowerCase().includes(q)&&!(m.name||'').toLowerCase().includes(q))return false;if(rv==='yes'&&!m.reasoning)return false;if(rv==='no'&&m.reasoning)return false;if(pv!=='all'&&!(m.sources||[m.provider||'nous']).includes(pv))return false;return true;});}
 function resetToDefaults(){
  $('#cached').value=80;$('#cached-v').textContent='80k';
  $('#fresh').value=4;$('#fresh-v').textContent='4k';
@@ -135,9 +135,9 @@ function render(){
  const lang=LANG;const mt=$('#metric').value;
  $('#sub').textContent=T.sub[lang];
  const rows=filtered().slice();rows.sort((a,b)=>{if(sortKey==='ratio'){const ar=a.ratio==null?-1:a.ratio,br=b.ratio==null?-1:b.ratio;return br-ar;}if(sortKey==='intel')return b.score-a.score;if(sortKey==='cost')return a.cost-b.cost;if(sortKey==='ctx')return b.ctx-a.ctx;return 0;});
- $('#cnt').textContent=rows.length+' of '+ROWS.length+' scored';
+ const ccN=ROWS.filter(r=>(r.sources||[]).includes('commandcode')).length; $('#cnt').textContent=rows.length+' of '+ROWS.length+' scored'+(ccN?(' · '+ccN+' on CommandCode'):'');
  const maxSc=Math.max(...rows.map(r=>r.score).filter(n=>!isNaN(n)),1);
- let h='';rows.forEach((r,i)=>{const isMe=r.id==='deepseek/deepseek-v4-flash-0731';const ratioText=r.ratio==null?'<span class="note">free</span>':r.ratio.toLocaleString(undefined,{maximumFractionDigits:0});const barW=Math.max(6,(r.score/maxSc)*100);const tags=(isMe?'<span class="tag me">'+T.yours[lang]+'</span>':'')+(r.free?'<span class="tag free">free</span>':'');h+='<tr class="'+(isMe?'me':'')+'"><td class="num" style="color:var(--muted)">'+(i+1)+'</td><td class="mono">'+r.id.split('/').pop()+tags+'</td><td class="num"><div class="score-col"><div class="score-bar" style="width:'+barW+'%"></div>'+r.score.toFixed(1)+'</div></td><td class="num">'+fmtMoney(r.cost)+'</td><td class="num '+(r.ratio!=null&&r.ratio>10000?'ratio':'ratio-w')+'">'+ratioText+'</td><td class="num">'+fmtK(r.ctx)+'</td></tr>';});$('#body').innerHTML=h;
+ let h='';rows.forEach((r,i)=>{const isMe=r.id==='deepseek/deepseek-v4-flash-0731';const ratioText=r.ratio==null?'<span class="note">free</span>':r.ratio.toLocaleString(undefined,{maximumFractionDigits:0});const barW=Math.max(6,(r.score/maxSc)*100);const onCc=(r.sources||[]).includes('commandcode'); const tags=(isMe?'<span class="tag me">'+T.yours[lang]+'</span>':'')+(r.free?'<span class="tag free">free</span>':'')+(onCc?'<span class="tag cc">CC</span>':'');h+='<tr class="'+(isMe?'me':'')+'"><td class="num" style="color:var(--muted)">'+(i+1)+'</td><td class="mono">'+r.id.split('/').pop()+tags+'</td><td class="num"><div class="score-col"><div class="score-bar" style="width:'+barW+'%"></div>'+r.score.toFixed(1)+'</div></td><td class="num">'+fmtMoney(r.cost)+'</td><td class="num '+(r.ratio!=null&&r.ratio>10000?'ratio':'ratio-w')+'">'+ratioText+'</td><td class="num">'+fmtK(r.ctx)+'</td></tr>';});$('#body').innerHTML=h;
  const me=rows.find(r=>r.id==='deepseek/deepseek-v4-flash-0731');
  const vc=$('#verdict-card');
  if(me){vc.style.display='block';

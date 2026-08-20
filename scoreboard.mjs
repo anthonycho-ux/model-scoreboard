@@ -9,6 +9,7 @@
 // have all three).
 
 const oneM = n => n == null ? null : (Number(n) * 1e6);
+const normId = s => String(s || '').toLowerCase().split('/').pop().replace(/_/g, '-');
 
 const METRICS = {
   intelligence: m => m.benchmarks?.artificial_analysis?.intelligence_index,
@@ -33,6 +34,7 @@ export function scoreboard(catalog, opts = {}) {
   const freshK = opts.freshK ?? 4;
   const outK = opts.outK ?? 4;
   const metric = opts.metric || 'intelligence';
+  const ccSet = new Set((opts.commandCodeIds || []).map(normId));
   const rows = catalog.map(m => {
     const score = scoreMetric(m, metric);
     if (score == null) return null;
@@ -57,8 +59,8 @@ export function scoreboard(catalog, opts = {}) {
       reasoning: !!m.reasoning,
       cacheRead: cr,
       free,
-      provider: 'nous',
-
+      provider: ccSet.has(normId(m.id)) ? 'both' : 'nous',
+      sources: ccSet.has(normId(m.id)) ? ['nous', 'commandcode'] : ['nous'],
     };
   }).filter(Boolean);
   return rows;

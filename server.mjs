@@ -137,14 +137,20 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === '/api/scoreboard') {
     try {
-      const catalog = await getCatalog();
+      const [catalog, cmd] = await Promise.all([getCatalog(), commandCodeUsage()]);
       const cachedK = Number(url.searchParams.get('cached')) || 80;
       const freshK = Number(url.searchParams.get('fresh')) || 4;
       const outK = Number(url.searchParams.get('out')) || 4;
       const metric = url.searchParams.get('metric') || 'intelligence';
-      const rows = scoreboard(catalog, { cachedK, freshK, outK, metric });
+      const commandCodeIds = (cmd.models || []).map(m => m.model);
+      const rows = scoreboard(catalog, { cachedK, freshK, outK, metric, commandCodeIds });
+      const ccScored = rows.filter(r => (r.sources || []).includes('commandcode')).length;
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ count: rows.length, rows }));
+      res.end(JSON.stringify({
+        count: rows.length,
+        commandCode: { live: commandCodeIds.length, scored: ccScored, measurable: !!cmd.measurable },
+        rows,
+      }));
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: e.message }));
