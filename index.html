@@ -6,6 +6,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .wrap{max-width:920px;margin:0 auto}
 .hd{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
 .kicker{color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.stamp{display:inline-flex;align-items:center;gap:8px;background:rgba(216,176,106,.12);border:1px solid var(--amber);color:var(--amber);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700;letter-spacing:.01em;font-family:ui-monospace,Menlo,monospace}
+.stamp .lab{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Segoe UI',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.stamp.stale{background:rgba(224,106,106,.12);border-color:var(--red);color:var(--red)}
 .lang{display:flex;gap:2px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px;margin-left:auto}
 .lang button,#reset,.more-t{border:none;background:transparent;color:var(--muted);padding:4px 12px;border-radius:5px;font-size:12px;cursor:pointer}
 .lang button.on{background:var(--blue);color:#fff}
@@ -21,15 +24,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .btn{border:0;border-radius:8px;padding:10px 16px;font-size:14px;cursor:pointer;font-weight:600}
 .btn.keep{background:var(--green);color:#102016}
 .btn.up{background:transparent;color:var(--text);border:1px solid var(--line)}
-.trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
-.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-.tile.on{border-color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber)}
-.tile .lab{font-size:11px;color:var(--muted);margin-bottom:6px}
-.tile .m{font-size:15px;font-weight:700}
-.tile .s{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted);margin-top:6px}
-.tile .s b{color:var(--text);font-weight:600}
-.tile .skip{color:var(--red);font-size:11px;margin-top:8px}
-.tile .go{color:var(--green);font-size:11px;margin-top:8px}
 .bar{display:flex;gap:8px;align-items:center;margin:0 0 12px;flex-wrap:wrap}
 .chip{border:1px solid var(--line);background:var(--panel2);color:var(--muted);border-radius:999px;padding:5px 12px;font-size:12px;cursor:pointer}
 .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -44,6 +38,23 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .tgl button{border:none;background:transparent;color:var(--muted);padding:4px 9px;border-radius:5px;font-size:11px;cursor:pointer}
 .tgl button.on{background:var(--blue);color:#fff}
 .cnt{color:var(--muted);font-size:12px;margin-bottom:8px}
+.fron{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;margin-bottom:14px}
+.fron .fl{font-size:11px;color:var(--muted);margin-bottom:8px;letter-spacing:.03em}
+.fron .fl b{color:var(--text)}
+.fron svg{display:block;width:100%;height:auto}
+.fron text{font-family:ui-monospace,Menlo,monospace;font-size:10px;fill:var(--muted)}
+.fron .pt{fill:var(--muted);opacity:.55}
+.fron .pt-me{fill:var(--amber)}
+.fron .pt-up{fill:var(--blue)}
+.fron .f-ln{fill:none;stroke:var(--green);stroke-width:2;opacity:.9}
+.fron .tl{fill:var(--text);font-weight:600}
+.fron svg circle{cursor:pointer}
+.fron circle.pt:hover{opacity:1}
+.fron circle.pt-sel{stroke:var(--cyan);stroke-width:2.5;opacity:1}
+.fron circle.pt-hov{fill:var(--cyan);opacity:1;stroke:var(--cyan);stroke-width:2}
+#body tr{cursor:pointer}
+#body tr.row-sel{box-shadow:inset 0 0 0 2px var(--cyan)}
+#body tr:hover{background:rgba(59,109,240,.08)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;color:var(--muted);font-weight:600;padding:7px 8px;border-bottom:1px solid var(--line);font-size:10px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none}
 th.n,td.n{text-align:right;font-family:ui-monospace,Menlo,monospace}
@@ -52,11 +63,18 @@ tr.me td{background:rgba(216,176,106,.08)}
 .tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:9px;margin-left:6px;vertical-align:middle}
 .tag.me{background:var(--amber);color:#14171c}
 .tag.cc{background:var(--blue);color:#fff}
+.tag.pr-n{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+.shape{display:flex;align-items:flex-end;gap:3px;height:26px}
+.shape .sb{width:6px;background:var(--muted);opacity:.4;border-radius:2px;min-height:2px}
+.shape .sb.on{background:var(--blue);opacity:1}
+.tie{color:var(--dim);opacity:.8}
+.tie b{font-weight:400;border-bottom:1px dotted var(--dim)}
+.cb{background-repeat:no-repeat;background-position:left bottom;background-size:100% 5px}
 .tag.free{background:var(--green);color:#14171c}
 .foot{color:var(--muted);font-size:11px;margin-top:12px;line-height:1.7}
 .note{color:var(--muted);font-size:11px}
 </style></head><body><div class="wrap">
-<div class="hd"><div class="kicker">Model Scoreboard</div><div class="lang"><button id="l-en">EN</button><button id="l-ko" class="on">한국어</button></div><button id="reset" type="button">Reset</button></div>
+<div class="hd"><div class="kicker">Model Scoreboard</div><div class="stamp" id="stamp" title=""><span class="lab" id="stamp-lab">Updated</span><span id="stamp-when">—</span></div><div class="lang"><button id="l-en">EN</button><button id="l-ko" class="on">한국어</button></div><button id="reset" type="button">Reset</button></div>
 
 <div class="hero" id="hero">
   <div class="verdict" id="v-line"></div>
@@ -71,20 +89,19 @@ tr.me td{background:rgba(216,176,106,.08)}
   </div>
 </div>
 
-<div class="trio" id="trio"></div>
+<div class="fron"><div class="fl" id="fron-lbl"></div><div id="fron-main"></div></div>
 
 <div class="bar">
-  <button type="button" class="chip on" data-p="nous" id="c-nous">Nous</button>
-  <button type="button" class="chip on" data-p="commandcode" id="c-cc">CommandCode</button>
   <button type="button" class="chip on" id="c-floor">49+</button>
+  <button type="button" class="chip on" id="c-prev" title="hide models scoring below the lowest score of the previous data refresh">prev floor</button>
   <input type="text" id="q" placeholder="">
   <button type="button" class="more-t" id="more-t"></button>
 </div>
 <div class="more" id="more">
   <span class="lbl" id="lbl-metric"></span>
-  <select id="metric">
-    <option value="composite">composite</option>
-    <option value="intelligence" selected>intelligence</option>
+  <select id="metric" title="composite = equal-weight mean of intel/coding/agentic; single metrics = that benchmark index">
+    <option value="composite" selected>composite</option>
+    <option value="intelligence">intelligence</option>
     <option value="coding">coding</option>
     <option value="agentic">agentic</option>
   </select>
@@ -96,9 +113,12 @@ tr.me td{background:rgba(216,176,106,.08)}
 
 <div class="cnt" id="cnt"></div>
 <table><thead><tr>
-  <th id="th-role"></th><th id="th-model"></th>
+  <th id="th-role"></th><th id="th-model"></th><th id="th-prov"></th>
   <th class="n" onclick="setSort('intel')" id="th-score"></th>
+  <th id="th-shape"></th>
+  <th class="n" id="th-delta"></th>
   <th class="n" onclick="setSort('cost')" id="th-cost"></th>
+  <th class="n" onclick="setSort('week')" id="th-week"></th>
   <th class="n" onclick="setSort('ratio')" id="th-ratio"></th>
 </tr></thead><tbody id="body"></tbody></table>
 <div class="foot" id="foot"></div>
@@ -107,7 +127,11 @@ tr.me td{background:rgba(216,176,106,.08)}
 const $=s=>document.querySelector(s);
 const ME='deepseek/deepseek-v4-flash-0731';
 const FLOOR=49;
-let ROWS=[],LANG='ko',sortKey='intel',floorOn=true;
+let ROWS=[],LANG='ko',sortKey='ratio',floorOn=true,CHANGED_AT=null;
+const PREV_FLOOR_KEY='sb.prevFloor';
+let PREV_FLOOR={};
+try{PREV_FLOOR=JSON.parse(localStorage.getItem(PREV_FLOOR_KEY)||'{}')||{};}catch(e){PREV_FLOOR={};}
+let prevOn=true;
 const fmtMoney=n=>'$'+(n<0.01?n.toFixed(4):n.toFixed(2));
 const short=id=>(id||'').split('/').pop().replace(/:batch$/,'');
 const isBatch=m=>/(:batch)\b/i.test(m.id||'');
@@ -116,36 +140,45 @@ const T={
   q:{en:'search',ko:'검색'},
   more:{en:'cost assumptions',ko:'비용 가정'},
   metric:{en:'metric',ko:'지표'},
+  metricTitle:{en:'composite = equal-weight mean of intel/coding/agentic (assumed weighting)',ko:'복합점수 = 지능/코딩/에이전틱 동일가중 평균 (가정)'},
+  metricTitle1:{en:'this metric = the single artificial_analysis benchmark index',ko:'이 지표 = artificial_analysis 단일 벤치마크 지수'},
   keep:{en:'Keep this model',ko:'이 모델 유지'},
-  up:{en:'Smarter · {n} · {c}',ko:'더 똑똑하게 · {n} · {c}'},
+  up:{en:'Smarter · {n} · {s} · {c}',ko:'더 똑똑하게 · {n} · {s} · {c}'},
   vKeep:{en:'Do not switch',ko:'지금은 바꾸지 마세요'},
   vUp:{en:'A smarter option costs more',ko:'더 똑똑한 선택은 비용이 더 듭니다'},
+  vDom:{en:'Smarter and cheaper. Switch now.',ko:'더 똑똑하고 더 싸다. 지금 바꾸세요.'},
   whyKeep:{en:'Nothing in this list is both smarter than your model and cheaper for live chat. Cheap leaders below 49 are hidden.',ko:'지금 모델보다 똑똑하면서 더 싼 대화용 모델은 없습니다. 49점 아래의 싼 1등은 숨겼습니다.'},
   whyUp:{en:'A live-chat model is smarter than yours. It costs more per request.',ko:'지금보다 똑똑한 대화용 모델이 있습니다. 요청당 비용은 더 듭니다.'},
+  whyDom:{en:'The upgrade beats your model on both axes: higher score, lower cost per request.',ko:'업그레이드 대상이 두 축에서 모두 이깁니다. 지능은 높고 요청당 비용은 쌉니다.'},
   whyGone:{en:'Your model is hidden by the current filter. Ranking changed; this card did not.',ko:'필터 때문에 내 모델이 목록에서 빠졌습니다. 순위만 바뀌었고, 이 카드는 그대로입니다.'},
   unit:{en:'intelligence · {c} / request',ko:'지능 · 요청 {c}'},
-  tHide:{en:'Hidden · below 49',ko:'숨김 · 49 미만'},
-  tNow:{en:'Now',ko:'지금'},
-  tUp:{en:'Smarter · costs more',ko:'더 똑똑 · 더 비쌈'},
-  tStrong:{en:'Highest score',ko:'최강'},
-  skip:{en:'Not the pick.',ko:'고르지 않음.'},
-  goNow:{en:'Best balance for chat.',ko:'대화용으로 가장 균형.'},
-  goUp:{en:'Pay more to go here.',ko:'비용을 올리면 여기.'},
+  goDom:{en:'Pay less to go here.',ko:'비용을 내려도 여기.'},
   role:{en:'role',ko:'역할'},
   model:{en:'model',ko:'모델'},
+  prov:{en:'provider',ko:'공급자'},
+  shape:{en:'profile',ko:'자질'},
+  tieTip:{en:'within benchmark noise (~2 pts) of another model — rank not separable',ko:'벤치마크 노이즈(~2점) 구간 — 서열 구분 불가'},
   score:{en:'score',ko:'지능'},
+  delta:{en:'Δ vs yours',ko:'내 모델 대비'},
   cost:{en:'cost',ko:'요청'},
+  week:{en:'wk @ real mix',ko:'주간(실사용)'},
   ratio:{en:'score/cost',ko:'지능/비용'},
+  pFoot:{en:'prev floor hides scores below the last refresh minimum · dotted score = benchmark noise band (±2), rank not separable · composite = equal-weight mean of intel/coding/agentic · ±2 band is an assumed spread, not measured',ko:'prev floor: 직전 갱신 최저점 미만 숨김 · 점선 지능 = 벤치마크 노이즈 구간(±2), 서열 구분 불가 · 복합점수 = 지능/코딩/에이전틱 동일가중 평균 · ±2 구간은 가정치, 실측 아님'},
+  paretoLbl:{en:'Score vs cost — log x, Pareto frontier (green). Amber = your model, blue = the pick.',ko:'지능 vs 비용 — 로그 축, 파레토 프론티어(초록). 노랑 = 현재 모델, 파랑 = 추천.'},
   yours:{en:'yours',ko:'내 모델'},
+  meName:{en:'current model',ko:'현재 모델'},
+  meDot:{en:'you',ko:'현재'},
   hidden:{en:'{n} models below 49 hidden',ko:'49 미만 {n}개 숨김'},
   cnt:{en:'{n} of {t} scored',ko:'평가 {t}개 중 {n}개'},
-  foot:{en:'Batch (offline) models are left out of this chat ranking. Same numbers as before.',ko:'묶음 처리(batch) 모델은 대화용 순위에서 뺐습니다. 숫자는 기존과 같습니다.'},
+  foot:{en:'Batch (offline) models are left out of this chat ranking. wk @ real mix = your actual last-7-day traffic at this model\'s today list prices. Not the billed amount (subscription credits apply).',ko:'묶음 처리(batch) 모델은 대화용 순위에서 뺐습니다. 주간(실사용) = 지난 7일 실제 트래픽을 이 모델의 오늘 정가로 돌린 비용. 실제 청구액과는 다를 수 있습니다(구독 크레딧 적용).'},
+  stamp:{en:'Changed',ko:'변경'},
+  stampTitle:{en:'Last provider change: new model, price, or deal. Polling does not move this date.',ko:'공급자가 모델·가격·딜을 바꾼 마지막 시각. 단순 조회로는 날짜가 안 바뀝니다.'},
   rNow:{en:'now',ko:'지금'},
   rUp:{en:'upgrade',ko:'업그레이드'},
   rTop:{en:'top',ko:'최강'},
   rRest:{en:'',ko:''}
 };
-function fill(t,v){return t.replace('{n}',v.n||'').replace('{c}',v.c||'').replace('{t}',v.t||'');}
+function fill(t,v){return t.replace('{n}',v.n||'').replace('{c}',v.c||'').replace('{t}',v.t||'').replace('{s}',v.s||'');}
 function providerOn(){return [...document.querySelectorAll('.chip[data-p].on')].map(b=>b.dataset.p);}
 function filtered(){
   const q=($('#q').value||'').toLowerCase();
@@ -157,6 +190,7 @@ function filtered(){
     if(rv==='no'&&m.reasoning)return false;
     if(sel.length){if(!sel.some(s=>srcs(m).includes(s)))return false;}
     if(floorOn&&(m.score||0)<FLOOR)return false;
+    if(prevOn&&PREV_FLOOR[$('#metric').value]!=null&&(m.score||0)<PREV_FLOOR[$('#metric').value])return false;
     if(isBatch(m))return false;
     return true;
   });
@@ -174,13 +208,133 @@ function picks(rows){
   const cheaperSmarter=smarter.some(m=>me&&m.cost<me.cost);
   return {me,meIn,upgrade,strongest,keep:!cheaperSmarter,hidden:ROWS.length-rows.length};
 }
+// Pareto frontier: models where no other model is both smarter and cheaper.
+// Costs are log-scaled because they span ~$0.0005 to $0.14.
+function paretoFrontier(rows){
+  const live=rows.filter(m=>!isBatch(m)&&m.cost>0&&m.score!=null);
+  if(live.length<2)return {frontier:[],live};
+  const sorted=[...live].sort((a,b)=>a.cost-b.cost);
+  const frontier=[];
+  let bestScore=-1;
+  for(const m of sorted){
+    if(m.score>bestScore){frontier.push(m);bestScore=m.score;}
+  }
+  return {frontier,live};
+}
+function renderPareto(){
+  const el=$('#fron-main');
+  if(!el)return;
+  $('#fron-lbl').textContent=T.paretoLbl[LANG];
+  const {frontier,live}=paretoFrontier(ROWS);
+  if(live.length<2){el.innerHTML='';return;}
+  const W=560,H=300,PL=52,PR=14,PT=14,PB=30;
+  const costs=live.map(m=>m.cost);
+  const minC=Math.min(...costs)*0.9,maxC=Math.max(...costs)*1.1;
+  const logMin=Math.log(minC),logMax=Math.log(maxC);
+  const X=c=>PL+((Math.log(c)-logMin)/(logMax-logMin))*(W-PL-PR);
+  const maxS=Math.max(...live.map(m=>m.score))*1.05;
+  const Y=s=>PT+(1-s/maxS)*(H-PT-PB);
+  const shortId=id=>(id||'').split('/').pop().replace(/:batch$/,'');
+  const me=live.find(m=>m.id===ME);
+  // upgrade pick, same rule as the hero: smarter than me, cheapest of those,
+  // preferably +4 or more; when none is cheaper the frontier still shows the gap
+  const meScore=me?me.score:0;
+  const smarter=live.filter(m=>m.id!==ME&&m.score>meScore).sort((a,b)=>a.cost-b.cost);
+  const prompt=smarter.find(m=>m.score>=meScore+4)||smarter[0]||null;
+  // staircase: from left edge at the cheapest frontier point's height,
+  // step right to each next frontier x at the old height, then up to its score
+  let d='M '+PL.toFixed(1)+' '+Y(frontier[0].score).toFixed(1);
+  d+=' L '+X(frontier[0].cost).toFixed(1)+' '+Y(frontier[0].score).toFixed(1);
+  for(let i=1;i<frontier.length;i++){
+    d+=' L '+X(frontier[i].cost).toFixed(1)+' '+Y(frontier[i-1].score).toFixed(1);
+    d+=' L '+X(frontier[i].cost).toFixed(1)+' '+Y(frontier[i].score).toFixed(1);
+  }
+  d+=' L '+(W-PR).toFixed(1)+' '+Y(frontier[frontier.length-1].score).toFixed(1);
+  const ticks=[0.0005,0.001,0.002,0.005,0.01,0.02,0.05,0.1,0.2];
+  const fmt=c=>'$'+(c<0.01?c.toFixed(4).replace(/0+$/,'').replace(/\.$/,'.0'):c.toFixed(2));
+  let pts='';
+  for(const m of live){
+    const x=X(m.cost).toFixed(1),y=Y(m.score).toFixed(1);
+    const cls=m.id===ME?'pt-me':(prompt&&m.id===prompt.id?'pt-up':'pt');
+    pts+='<circle class="'+cls+'" data-id="'+m.id+'" cx="'+x+'" cy="'+y+'" r="'+(m.id===ME?5:3.5)+'"/>';
+  }
+  let xt='';
+  for(const c of ticks){
+    if(c<minC||c>maxC)continue;
+    const x=X(c).toFixed(1);
+    xt+='<text x="'+x+'" y="'+(H-8)+'" text-anchor="middle">'+fmt(c)+'</text>';
+  }
+  let yts='';
+  for(let s=0;s<=maxS;s+=10){
+    const y=Y(s).toFixed(1);
+    yts+='<text x="'+(PL-6)+'" y="'+(y+3)+'" text-anchor="end">'+s+'</text>';
+  }
+  const meLab=me?'<text class="tl" x="'+(X(me.cost)+8)+'" y="'+(Y(me.score)-6)+'">'+T.meDot[LANG]+'</text>':'';
+  const upLab=prompt?'<text class="tl" x="'+(X(prompt.cost)+8)+'" y="'+(Y(prompt.score)-6)+'">'+shortId(prompt.id)+'</text>':'';
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'"><line x1="'+PL+'" y1="'+(H-PB)+'" x2="'+(W-PR)+'" y2="'+(H-PB)+'" stroke="#2a2f3a"/><line x1="'+PL+'" y1="'+PT+'" x2="'+PL+'" y2="'+(H-PB)+'" stroke="#2a2f3a"/>'+xt+yts+'<path class="f-ln" d="'+d+'"/>'+pts+meLab+upLab+'</svg>';
+  el.querySelectorAll('svg circle').forEach(c=>c.addEventListener('click',()=>{
+    const id=c.getAttribute('data-id');
+    const row=[...document.querySelectorAll('#body tr')].find(tr=>tr.dataset.id===id);
+    el.querySelectorAll('circle.pt-sel').forEach(x=>x.classList.remove('pt-sel'));
+    c.classList.add('pt-sel');
+    if(row){row.classList.add('row-sel');row.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>row.classList.remove('row-sel'),2200);}
+  }));
+}
+function hTri(tr,on){
+  const main=$('#fron-main');
+  if(!main)return;
+  main.querySelectorAll('circle.pt-hov').forEach(c=>c.classList.remove('pt-hov'));
+  if(!on||!tr.dataset.id)return;
+  const dot=[...main.querySelectorAll('svg circle')].find(c=>c.getAttribute('data-id')===tr.dataset.id);
+  if(dot){dot.classList.add('pt-hov');}
+}
+function selRow(tr){
+  const id=tr.dataset.id;
+  const main=$('#fron-main');
+  if(main){
+    main.querySelectorAll('circle.pt-sel').forEach(x=>x.classList.remove('pt-sel'));
+    const dot=[...main.querySelectorAll('svg circle')].find(c=>c.getAttribute('data-id')===id);
+    if(dot){dot.classList.add('pt-sel');}
+  }
+  document.querySelectorAll('#body tr.row-sel').forEach(r=>r.classList.remove('row-sel'));
+  tr.classList.add('row-sel');
+  setTimeout(()=>tr.classList.remove('row-sel'),2200);
+}
 async function load(){
   try{
     const c=$('#cached').value,f=$('#fresh').value,o=$('#out').value,m=$('#metric').value;
     const r=await fetch('/api/scoreboard?cached='+c+'&fresh='+f+'&out='+o+'&metric='+m);
     if(!r.ok)throw 0;
-    const d=await r.json();ROWS=d.rows||[];render();
+    const d=await r.json();ROWS=d.rows||[];CHANGED_AT=d.lastChangedAt||d.fetchedAt||null;
+    if(prevOn&&!($('#q').value||'').trim()){
+      const frows=filtered();
+      if(frows.length){
+        PREV_FLOOR[$('#metric').value]=Math.min(...frows.map(x=>x.score||0));
+        try{localStorage.setItem(PREV_FLOOR_KEY,JSON.stringify(PREV_FLOOR));}catch(e){}
+      }
+    }
+    render();
+    renderPareto();
   }catch(e){}
+}
+function fmtStamp(iso){
+  if(!iso)return {text:'—',ageMs:null};
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime()))return {text:iso,ageMs:null};
+  const ageMs=Date.now()-d.getTime();
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Edmonton',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,timeZoneName:'short'}).formatToParts(d);
+  const g=t=>parts.find(p=>p.type===t)?.value||'';
+  const text=g('year')+'-'+g('month')+'-'+g('day')+' '+g('hour')+':'+g('minute')+' '+g('timeZoneName');
+  return {text,ageMs};
+}
+function paintStamp(){
+  const el=$('#stamp'),lab=$('#stamp-lab'),when=$('#stamp-when');
+  if(!el)return;
+  lab.textContent=T.stamp[LANG];
+  el.title=T.stampTitle[LANG];
+  const {text,ageMs}=fmtStamp(CHANGED_AT);
+  when.textContent=text;
+  el.classList.toggle('stale',ageMs!=null&&ageMs>6*60*60*1000);
 }
 function setSort(k){sortKey=k;render();}
 function resetToDefaults(){
@@ -189,37 +343,50 @@ function resetToDefaults(){
   $('#out').value=4;$('#out-v').textContent='4k';
   $('#metric').value='intelligence';
   $('#q').value='';
-  sortKey='intel';
+  sortKey='ratio';
   floorOn=true;$('#c-floor').classList.add('on');
+  prevOn=true;$('#c-prev').classList.add('on');
   document.querySelectorAll('#reason-tgl button').forEach(b=>b.classList.toggle('on',b.dataset.v==='all'));
   document.querySelectorAll('.chip[data-p]').forEach(b=>b.classList.add('on'));
   LANG='ko';$('#l-ko').classList.add('on');$('#l-en').classList.remove('on');
   load();
 }
 function render(){
+  paintStamp();
   const lang=LANG;
   $('#q').placeholder=T.q[lang];
   $('#more-t').textContent=T.more[lang];
   $('#lbl-metric').textContent=T.metric[lang];
+  $('#metric').title=($('#metric').value==='composite')?T.metricTitle[lang]:T.metricTitle1[lang];
   $('#th-role').textContent=T.role[lang];
   $('#th-model').textContent=T.model[lang];
+  $('#th-prov').textContent=T.prov[lang];
+  $('#th-shape').textContent=T.shape[lang];
   $('#th-score').textContent=T.score[lang];
+  $('#th-delta').textContent=T.delta[lang];
   $('#th-cost').textContent=T.cost[lang];
+  $('#th-week').textContent=T.week[lang];
   $('#th-ratio').textContent=T.ratio[lang];
-  $('#foot').textContent=T.foot[lang];
+  $('#foot').textContent=T.foot[lang]+(prevOn?' · '+T.pFoot[lang]:'');
   const rows=filtered().slice();
   rows.sort((a,b)=>{
     if(sortKey==='ratio'){const ar=a.ratio==null?-1:a.ratio,br=b.ratio==null?-1:b.ratio;return br-ar;}
     if(sortKey==='intel')return b.score-a.score;
     if(sortKey==='cost')return a.cost-b.cost;
+    if(sortKey==='week')return (a.weekCost==null?1e9:a.weekCost)-(b.weekCost==null?1e9:b.weekCost);
     return 0;
   });
+  const bands={};
+  rows.forEach(r=>{const b=Math.round((r.score||0)/2);(bands[b]=bands[b]||[]).push(r);});
+  const maxRatio=Math.max(1,...rows.map(r=>r.ratio||0));
   const p=picks(rows);
   const me=p.me;
+  const meWeek=me?me.weekCost:null;
   const keep=p.keep||!p.upgrade;
-  $('#v-line').textContent=keep?T.vKeep[lang]:T.vUp[lang];
-  $('#v-name').textContent=me?short(me.id):'—';
-  let why=keep?T.whyKeep[lang]:T.whyUp[lang];
+  const dom=p.upgrade&&me&&p.upgrade.cost<me.cost;
+  $('#v-line').textContent=dom?T.vDom[lang]:(keep?T.vKeep[lang]:T.vUp[lang]);
+  $('#v-name').textContent=me?T.meName[lang]:'—';
+  let why=dom?T.whyDom[lang]:(keep?T.whyKeep[lang]:T.whyUp[lang]);
   if(me&&!p.meIn)why=T.whyGone[lang];
   $('#v-why').textContent=why;
   $('#v-score').textContent=me?me.score.toFixed(1):'—';
@@ -227,19 +394,8 @@ function render(){
   $('#b-keep').textContent=T.keep[lang];
   if(p.upgrade){
     $('#b-up').style.display='inline-block';
-    $('#b-up').textContent=fill(T.up[lang],{n:short(p.upgrade.id),c:fmtMoney(p.upgrade.cost)});
+    $('#b-up').textContent=fill(T.up[lang],{n:short(p.upgrade.id),s:p.upgrade.score.toFixed(1),c:fmtMoney(p.upgrade.cost)});
   }else{$('#b-up').style.display='none';}
-
-  const below=ROWS.filter(m=>(m.score||0)<FLOOR).length;
-  const hideN=floorOn?below:0;
-  const leftTitle=floorOn?T.tHide[lang]:T.tHide[lang];
-  const leftName=floorOn?fill(T.hidden[lang],{n:String(below)}): (ROWS.filter(m=>(m.score||0)<FLOOR).sort((a,b)=>(b.ratio||0)-(a.ratio||0))[0]||{}).id;
-  const trio=[
-    {lab:T.tHide[lang],m:floorOn?fill(T.hidden[lang],{n:String(below)}):short(leftName||''),s:floorOn?'':'',cls:'skip',note:T.skip[lang],on:false},
-    {lab:T.tNow[lang],m:me?short(me.id):'—',s:me?'<b>'+me.score.toFixed(1)+'</b> · '+fmtMoney(me.cost):'',cls:'go',note:T.goNow[lang],on:true},
-    {lab:p.upgrade?T.tUp[lang]:T.tStrong[lang],m:p.upgrade?short(p.upgrade.id):(p.strongest?short(p.strongest.id):'—'),s:p.upgrade?'<b>'+p.upgrade.score.toFixed(1)+'</b> · '+fmtMoney(p.upgrade.cost):(p.strongest?'<b>'+p.strongest.score.toFixed(1)+'</b> · '+fmtMoney(p.strongest.cost):''),cls:'go',note:T.goUp[lang],on:false}
-  ];
-  $('#trio').innerHTML=trio.map(t=>'<div class="tile'+(t.on?' on':'')+'"><div class="lab">'+t.lab+'</div><div class="m">'+t.m+'</div><div class="s">'+t.s+'</div><div class="'+t.cls+'">'+t.note+'</div></div>').join('');
 
   $('#cnt').textContent=fill(T.cnt[lang],{n:String(rows.length),t:String(ROWS.length)})+(floorOn?' · 49+':'');
   let h='';
@@ -248,10 +404,28 @@ function render(){
     const onCc=srcs(r).includes('commandcode');
     const role=isMe?T.rNow[lang]:(p.upgrade&&r.id===p.upgrade.id?T.rUp[lang]:(p.strongest&&r.id===p.strongest.id?T.rTop[lang]:''));
     const ratioText=r.ratio==null?'—':Math.round(r.ratio).toLocaleString();
-    const tags=(isMe?'<span class="tag me">'+T.yours[lang]+'</span>':'')+(r.free?'<span class="tag free">free</span>':'')+(onCc?'<span class="tag cc">CC</span>':'')+(isBatch(r)?'<span class="tag">batch</span>':'');
-    h+='<tr class="'+(isMe?'me':'')+'"><td>'+role+'</td><td>'+short(r.id)+tags+'</td><td class="n">'+r.score.toFixed(1)+'</td><td class="n">'+fmtMoney(r.cost)+'</td><td class="n">'+ratioText+'</td></tr>';
+    const tags=(isMe?'<span class="tag me">'+T.yours[lang]+'</span>':'')+(r.free?'<span class="tag free">free</span>':'')+(isBatch(r)?'<span class="tag">batch</span>':'');
+    const dScore=me?r.score-me.score:null;
+    const dCost=me?r.cost-me.cost:null;
+    const deltaText=isMe?'—':(me?((dScore>=0?'+':'')+dScore.toFixed(1)+' · '+(dCost<=0?'−':'+')+fmtMoney(Math.abs(dCost))):'—');
+    const band=Math.round((r.score||0)/2);
+    const tied=(bands[band]||[]).length>=2;
+    const provCell=srcs(r).includes('commandcode')?'<span class="tag cc">Nous · CC</span>':'<span class="tag pr-n">Nous</span>';
+    const ratioPct=r.ratio?Math.max(2,Math.round(r.ratio/maxRatio*100)):0;
+    const weekPct=(r.weekCost!=null&&meWeek)?Math.min(100,Math.max(2,Math.round(r.weekCost/meWeek*100))):(r.weekCost!=null?2:0);
+    const weekCol=r.weekCost!=null&&meWeek&&r.weekCost<=meWeek?'rgba(111,220,155,.5)':'rgba(59,109,240,.45)';
+    const weekStyle='background-image:linear-gradient(90deg,'+weekCol+' 0%,'+weekCol+' '+weekPct+'%,transparent '+weekPct+'%)';
+    const ratioStyle='background-image:linear-gradient(90deg,rgba(59,109,240,.45) 0%,rgba(59,109,240,.45) '+ratioPct+'%,transparent '+ratioPct+'%)';
+    const shapeBars=[r.intelligence,r.coding,r.agentic];
+    const shapeAcc=$('#metric').value==='intelligence'?0:($('#metric').value==='coding'?1:($('#metric').value==='agentic'?2:-1));
+    const shapeCell='<td class="shape" title="intel '+(shapeBars[0]==null?'-':shapeBars[0])+' · coding '+(shapeBars[1]==null?'-':shapeBars[1])+' · agentic '+(shapeBars[2]==null?'-':shapeBars[2])+'">'+shapeBars.map((v,i)=>{const h=v==null?2:Math.min(100,Math.max(0,v))/100*24+2;return '<div class="sb'+(i===shapeAcc?' on':'')+'" style="height:'+h.toFixed(1)+'px"></div>';}).join('')+'</td>';
+    h+='<tr class="'+(isMe?'me':'')+'" data-id="'+r.id+'" onclick="selRow(this)"><td>'+role+'</td><td>'+(isMe?T.meName[lang]:short(r.id))+tags+'</td><td>'+provCell+'</td><td class="n'+(tied?' tie':'')+'" title="'+(tied?T.tieTip[lang]:'')+'">'+r.score.toFixed(1)+'</td>'+shapeCell+'<td class="n">'+deltaText+'</td><td class="n">'+fmtMoney(r.cost)+'</td><td class="n cb" style="'+weekStyle+'">'+(r.weekCost==null?'—':fmtMoney(r.weekCost))+'</td><td class="n cb" style="'+ratioStyle+'">'+ratioText+'</td></tr>';
   });
   $('#body').innerHTML=h;
+  document.querySelectorAll('#body tr').forEach(tr=>{
+    tr.addEventListener('mouseenter',()=>hTri(tr,true));
+    tr.addEventListener('mouseleave',()=>hTri(tr,false));
+  });
 }
 $('#metric').addEventListener('change',load);
 $('#cached').addEventListener('input',()=>{$('#cached-v').textContent=Math.round($('#cached').value)+'k';load();});
@@ -261,11 +435,12 @@ $('#q').addEventListener('input',render);
 document.querySelectorAll('#reason-tgl button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#reason-tgl button').forEach(x=>x.classList.remove('on'));b.classList.add('on');render();}));
 document.querySelectorAll('.chip[data-p]').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('on');render();}));
 $('#c-floor').addEventListener('click',()=>{floorOn=!floorOn;$('#c-floor').classList.toggle('on',floorOn);render();});
+$('#c-prev').addEventListener('click',()=>{prevOn=!prevOn;$('#c-prev').classList.toggle('on',prevOn);render();});
 $('#more-t').addEventListener('click',()=>$('#more').classList.toggle('on'));
 $('#reset').addEventListener('click',resetToDefaults);
 $('#l-en').addEventListener('click',()=>{LANG='en';$('#l-en').classList.add('on');$('#l-ko').classList.remove('on');render();});
 $('#l-ko').addEventListener('click',()=>{LANG='ko';$('#l-ko').classList.add('on');$('#l-en').classList.remove('on');render();});
 load();
 </script>
-<div style="text-align:center;padding:14px 8px 22px;color:#5a6270;font-size:11px;border-top:1px solid #2a2f3a;margin-top:24px">Built and maintained by <strong style="color:#9aa3b2">Sol</strong> (Aside) &middot; last touched 2026-08-20</div>
+<div style="text-align:center;padding:14px 8px 22px;color:#5a6270;font-size:11px;border-top:1px solid #2a2f3a;margin-top:24px">Built and maintained by <strong style="color:#9aa3b2">Sol</strong> (Aside) &middot; live refresh stamp is in the header</div>
 </body></html>

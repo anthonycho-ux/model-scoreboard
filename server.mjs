@@ -4,6 +4,7 @@
 import http from 'node:http';
 import { readFile, writeFile, rename, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import os from 'node:os';
@@ -22,9 +23,80 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // sessions use. The apply feature writes here, gated by a confirm step.
 const ASIDE_SETTINGS = path.join(os.homedir(), '.aside', 'u', '0', 'settings.json');
 
+// Real usage profile from usage.csv: requests per week and per-request token mix
+// (cache-read, fresh input, output). Drives the honest weekly-cost column.
+function realUsageProfile(rows) {
+  let req = 0, cacheRead = 0, fresh = 0, out = 0, spend = 0;
+  for (const r of rows) {
+    if (!r.model) continue; // tool/subscription rows are not model inference
+    req += r.requests || 0;
+    cacheRead += r.cacheRead || 0;
+    fresh += Math.max(0, (r.input || 0) - (r.cacheRead || 0));
+    out += r.output || 0;
+    spend += r.net < 0 ? -r.net : 0; // billed dollars, exact from the export
+  }
+  if (!req) return null;
+  return {
+    reqPerWeek: req,
+    cachePerReq: cacheRead / req,
+    freshPerReq: fresh / req,
+    outPerReq: out / req,
+    actualSpend: spend,
+  };
+}
+
 // Cache the catalog briefly so the dashboard isn't hammering the API on every render.
 let cache = { data: null, ts: 0 };
 const TTL = Number(process.env.CACHE_TTL || 60_000);
+
+// Persisted change watermark: bump only when providers change model set,
+// prices, or deals — not on every poll. Benchmark score-only moves ignored.
+const CHANGE_STATE = path.join(__dirname, '.catalog-change.json');
+
+function priceSlice(p = {}) {
+  const orig = p.original || {};
+  return {
+    prompt: p.prompt ?? null,
+    completion: p.completion ?? null,
+    cacheRead: p.input_cache_read ?? null,
+    webSearch: p.web_search ?? null,
+    origPrompt: orig.prompt ?? null,
+    origCompletion: orig.completion ?? null,
+    origCacheRead: orig.input_cache_read ?? null,
+    origWebSearch: orig.web_search ?? null,
+  };
+}
+
+function normModelId(s) {
+  return String(s || '').toLowerCase().split('/').pop().replace(/_/g, '-');
+}
+
+function buildChangeFingerprint(catalog, commandCodeIds = []) {
+  const cc = new Set((commandCodeIds || []).map(normModelId));
+  const rows = (catalog || []).map(m => {
+    const id = String(m.id || '');
+    return { id, pricing: priceSlice(m.pricing || {}), cc: cc.has(normModelId(id)) };
+  }).sort((a, b) => a.id.localeCompare(b.id));
+  return createHash('sha256').update(JSON.stringify(rows)).digest('hex');
+}
+
+async function trackCatalogChange(catalog, commandCodeIds) {
+  const fingerprint = buildChangeFingerprint(catalog, commandCodeIds);
+  const fetchedAt = catalogFetchedAt();
+  let prev = null;
+  if (existsSync(CHANGE_STATE)) {
+    try { prev = JSON.parse(await readFile(CHANGE_STATE, 'utf8')); } catch { prev = null; }
+  }
+  if (prev && prev.fingerprint === fingerprint && prev.lastChangedAt) {
+    return { lastChangedAt: prev.lastChangedAt, fingerprint, changed: false, fetchedAt };
+  }
+  const lastChangedAt = fetchedAt || new Date().toISOString();
+  const next = { fingerprint, lastChangedAt, updatedAt: new Date().toISOString() };
+  const tmp = CHANGE_STATE + '.tmp-' + Date.now();
+  await writeFile(tmp, JSON.stringify(next, null, 2) + '\n', { mode: 0o600 });
+  await rename(tmp, CHANGE_STATE);
+  return { lastChangedAt, fingerprint, changed: !prev || prev.fingerprint !== fingerprint, fetchedAt };
+}
 
 async function getCatalog() {
   if (cache.data && Date.now() - cache.ts < TTL) return cache.data;
@@ -35,6 +107,10 @@ async function getCatalog() {
   const json = await res.json();
   cache = { data: json.data || [], ts: Date.now() };
   return cache.data;
+}
+
+function catalogFetchedAt() {
+  return cache.ts ? new Date(cache.ts).toISOString() : null;
 }
 
 let usageRowsCache = { data: null, ts: 0 };
@@ -143,12 +219,19 @@ const server = http.createServer(async (req, res) => {
       const outK = Number(url.searchParams.get('out')) || 4;
       const metric = url.searchParams.get('metric') || 'intelligence';
       const commandCodeIds = (cmd.models || []).map(m => m.model);
-      const rows = scoreboard(catalog, { cachedK, freshK, outK, metric, commandCodeIds });
+      const usageRows = await getUsageRows();
+      const realMix = realUsageProfile(usageRows);
+      const rows = scoreboard(catalog, { cachedK, freshK, outK, metric, commandCodeIds, realMix });
       const ccScored = rows.filter(r => (r.sources || []).includes('commandcode')).length;
+      const change = await trackCatalogChange(catalog, commandCodeIds);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         count: rows.length,
+        lastChangedAt: change.lastChangedAt,
+        fetchedAt: change.fetchedAt,
+        changed: change.changed,
         commandCode: { live: commandCodeIds.length, scored: ccScored, measurable: !!cmd.measurable },
+        realMix,
         rows,
       }));
     } catch (e) {

@@ -45,6 +45,15 @@ export function scoreboard(catalog, opts = {}) {
     if (cr == null || pr == null || co == null) return null;
     const cost = (cachedK * cr + freshK * pr + outK * co) / 1000;
     const free = cost === 0;
+    // Real-mix weekly cost: apply the user's actual 7-day traffic profile
+    // (requests/week, cache-read/fresh/output tokens per request) to this
+    // model's live prices. Honest dollars per week, not a guessed mix.
+    const rm = opts.realMix;
+    const weekCost = rm ? rm.reqPerWeek * (
+      (Number(p.input_cache_read) || 0) * rm.cachePerReq +
+      (Number(p.prompt) || 0) * rm.freshPerReq +
+      (Number(p.completion) || 0) * rm.outPerReq
+    ) : null;
     return {
       id: m.id,
       name: m.name,
@@ -54,6 +63,7 @@ export function scoreboard(catalog, opts = {}) {
       agentic: m.benchmarks?.artificial_analysis?.agentic_index ?? null,
       score,
       cost,
+      weekCost,
       ratio: free ? null : (score / cost),
       ctx: m.context_length || 0,
       reasoning: !!m.reasoning,
@@ -61,6 +71,7 @@ export function scoreboard(catalog, opts = {}) {
       free,
       provider: ccSet.has(normId(m.id)) ? 'both' : 'nous',
       sources: ccSet.has(normId(m.id)) ? ['nous', 'commandcode'] : ['nous'],
+      weekReq: rm ? rm.reqPerWeek : null,
     };
   }).filter(Boolean);
   return rows;
