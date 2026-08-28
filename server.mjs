@@ -117,7 +117,12 @@ let usageRowsCache = { data: null, ts: 0 };
 const USAGE_TTL = 120_000;
 async function getUsageRows() {
   if (usageRowsCache.data && Date.now() - usageRowsCache.ts < USAGE_TTL) return usageRowsCache.data;
-  const text = await readFile(path.join(__dirname, 'usage.csv'), 'utf8');
+  let text;
+  try {
+    text = await readFile(path.join(__dirname, 'usage.csv'), 'utf8');
+  } catch {
+    return [];
+  }
   const rows = parseUsageCSV(text);
   usageRowsCache = { data: rows, ts: Date.now() };
   return rows;

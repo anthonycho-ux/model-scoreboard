@@ -2,3 +2,8 @@
 .env
 .env.*
 *.pem
+# persisted catalog change watermark (local runtime state)
+.catalog-change.json
+.catalog-change.json.tmp-*
+
+usage.csv
