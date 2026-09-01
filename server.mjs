@@ -13,6 +13,8 @@ import path from 'node:path';
 import os from 'node:os';
 import { commandCodeUsage } from './cmd-usage.mjs';
 import { scoreboard } from './scoreboard.mjs';
+import { aaScoreFor } from './aa-data.mjs';
+import { pricingBase } from './live-data.mjs';
 import { deriveDeals, liveRealMix, ccLiveSnapshot } from './live-data.mjs';
 
 const PORT = Number(process.env.PORT || 8347);
@@ -203,37 +205,53 @@ const server = http.createServer(async (req, res) => {
       const outK = Number(url.searchParams.get('out')) || 4;
       const metric = url.searchParams.get('metric') || 'intelligence';
       const commandCodeIds = (cmd.models || []).map(m => m.model);
-      const [realMix, deals] = await Promise.all([liveRealMix(), deriveDeals()]);
+      const [realMix, deals, baseRates] = await Promise.all([liveRealMix(), deriveDeals(), pricingBase()]);
       const rows = scoreboard(catalog, { cachedK, freshK, outK, metric, commandCodeIds, realMix, deals });
       // CC-only models: present in the Command Code provider API but absent from
       // the Nous catalog (no benchmark, so scoreboard() cannot row them). Merge
       // them as unscored rows when the live CC deal/pricing gives effective rates.
       const normM = s => String(s || '').toLowerCase().split('/').pop().replace(/_/g, '-');
-      const nousNorms = new Set((catalog || []).map(m => normM(m.id)));
-      const ccOnlyIds = (cmd.models || []).map(m => m.model || m.id || '').filter(id => !nousNorms.has(normM(id)));
+      const canonM = s => normM(s).replace(/[._-]/g, '');
+      // Row every CC model not already in the board: Nous-presence alone does not
+      // score a model (its catalog entry may lack the AA benchmark triple), so
+      // the exclusion must be rows-based, not catalog-presence-based.
+      const ccOnlyIds = (cmd.models || []).map(m => m.model || m.id || '').filter(id => !rows.some(r => normM(r.id) === normM(id)));
       const dealFor = id => (deals || []).find(d => (d.ids || []).some(x => normM(x) === normM(id))) || null;
       for (const cid of ccOnlyIds) {
         if (rows.some(r => normM(r.id) === normM(cid))) continue;
         const dl = dealFor(cid);
-        const effCr = dl && dl.cacheRead != null ? Number(dl.cacheRead) : null;
-        const effPr = dl && dl.prompt != null ? Number(dl.prompt) : null;
-        const effCo = dl && dl.completion != null ? Number(dl.completion) : null;
+        const br = baseRates.get(canonM(cid)) || baseRates.get(normM(cid));
+        const effCr = dl && dl.cacheRead != null ? Number(dl.cacheRead) : (br ? Number(br.cacheRead) : null);
+        const effPr = dl && dl.prompt != null ? Number(dl.prompt) : (br ? Number(br.input) : null);
+        const effCo = dl && dl.completion != null ? Number(dl.completion) : (br ? Number(br.output) : null);
         if (effCr == null || effPr == null || effCo == null) continue; // no live CC pricing yet
         const cost = (cachedK * effCr + freshK * effPr + outK * effCo) / 1000;
         const weekCost = realMix ? realMix.reqPerWeek * (
           (effCr / 1e6) * realMix.cachePerReq + (effPr / 1e6) * realMix.freshPerReq + (effCo / 1e6) * realMix.outPerReq
         ) : null;
         const ccName = ((cmd.models || []).find(m => (m.model || m.id) === cid) || {}).name || cid;
+        // CC-only benchmark: resolve Artificial Analysis indices live (aa-data.mjs).
+        // No score is invented; models absent from AA stay unscored.
+        const aa = await aaScoreFor(normM(cid));
+        const aaScore = aa == null ? null : (metric === 'composite'
+          ? (aa.intelligence != null && aa.coding != null && aa.agentic != null ? (aa.intelligence + aa.coding + aa.agentic) / 3 : null)
+          : (metric === 'coding' ? aa.coding : metric === 'agentic' ? aa.agentic : aa.intelligence));
         rows.push({
-          id: cid, name: ccName, metric, intelligence: null, coding: null, agentic: null,
-          score: null, cost, weekCost, ratio: null, ctx: 0, reasoning: false,
+          id: cid, name: ccName, metric,
+          intelligence: aa ? aa.intelligence : null,
+          coding: aa ? aa.coding : null,
+          agentic: aa ? aa.agentic : null,
+          score: aaScore, cost, weekCost,
+          ratio: aaScore != null && cost > 0 ? aaScore / cost : null,
+          ctx: 0, reasoning: false,
           cacheRead: effCr, free: cost === 0,
           deal: dl ? { label: dl.label, expiry: dl.expiry || null, note: dl.note || null } : null,
           provider: 'commandcode', sources: ['commandcode'], weekReq: realMix ? realMix.reqPerWeek : null,
           ccOnly: true,
+          bench: aa ? { source: 'Artificial Analysis (live leaderboard)', slug: aa.slug, name: aa.name, estimated: aa.estimated, releaseDate: aa.releaseDate, fetchedAt: aa.fetchedAt } : null,
         });
       }
-      const ccScored = rows.filter(r => (r.sources || []).includes('commandcode')).length;
+      const ccScored = rows.filter(r => (r.sources || []).includes('commandcode') && r.score != null).length;
       const change = await trackCatalogChange(catalog, commandCodeIds);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
@@ -244,7 +262,7 @@ const server = http.createServer(async (req, res) => {
         commandCode: { live: commandCodeIds.length, scored: ccScored, measurable: !!cmd.measurable },
         realMix,
         deals: deals.length,
-        dataSource: 'live providers (Nous catalog API + Command Code API/pricing page); no local cache',
+        dataSource: 'live providers (Nous catalog API + Command Code API/pricing page + Artificial Analysis leaderboard for CC-only models); no local cache',
         rows,
       }));
     } catch (e) {
