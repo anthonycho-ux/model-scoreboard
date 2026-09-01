@@ -1,4 +1,4 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Model Scoreboard</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Model Scoreboard</title>
 <style>
 :root{--bg:#0f1114;--panel:#171b22;--panel2:#1d222b;--line:#2a2f3a;--blue:#3b6df0;--amber:#d8b06a;--muted:#8b93a1;--text:#e8ecf1;--green:#6fdc9b;--red:#e06a6a}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -62,11 +62,55 @@ td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
 tr.me td{background:rgba(216,176,106,.08)}
 .tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:9px;margin-left:6px;vertical-align:middle}
 .tag.me{background:var(--amber);color:#14171c}
+.tag.dl{background:rgba(216,176,106,.16);color:#d8b06a;border:1px solid rgba(216,176,106,.45)}
 .tag.cc{background:var(--blue);color:#fff}
 .tag.pr-n{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
-.shape{display:flex;align-items:flex-end;gap:3px;height:26px}
-.shape .sb{width:6px;background:var(--muted);opacity:.4;border-radius:2px;min-height:2px}
-.shape .sb.on{background:var(--blue);opacity:1}
+.tag.shp{background:rgba(59,109,240,.16);color:#9db8ff;border:1px solid rgba(59,109,240,.4)}
+.mx th,.mx td{text-align:center}
+.mx th:first-child,.mx td:first-child{text-align:left}
+.mx .mcell{display:inline-block;padding:6px 12px;border-radius:6px;border:1px solid var(--line);min-width:96px}
+.mx .mcell.win{border-color:rgba(111,220,155,.55);background:rgba(111,220,155,.1)}
+.mx .mcell.none{color:var(--muted);opacity:.5;border-style:dashed}
+.mx .mcell .pr{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.mx .mcell .dl{font-size:10px;color:var(--muted);margin-top:2px}
+.mx .mcell.win .dl{color:var(--green)}
+.mx .mlab{color:var(--muted);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px}
+.mx .best-tag{display:inline-block;color:#05220f;background:var(--green);font-size:9px;font-weight:800;padding:1px 6px;border-radius:8px;letter-spacing:.6px}
+.mx .new-tag{color:var(--amber);font-size:9.5px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+.mx .marg{color:var(--green);font-size:11px;font-weight:700;white-space:nowrap}
+.mx .marg.amber{color:var(--amber)}
+.changed{background:var(--panel);border:1px solid var(--amber);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12.5px}
+.changed .ch-hd{font-weight:700;color:var(--amber);font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.changed .ch-row{display:flex;gap:8px;padding:2.5px 0;align-items:baseline}
+.changed .ch-what{color:var(--text)}
+.changed .ch-pro{color:var(--muted);font-size:11px}
+.changed .ch-src{margin-top:6px;color:var(--muted);font-size:10.5px}
+.changed .ch-src a{color:#9db8ff}
+.changed .ch-emo{font-size:13px;width:20px;text-align:center;flex:none}
+.changed .t-up{background:rgba(111,220,155,.15);color:var(--green);border:1px solid rgba(111,220,155,.4)}
+.changed .t-down{background:rgba(224,106,106,.13);color:var(--red);border:1px solid rgba(224,106,106,.4)}
+.changed .t-new{background:rgba(59,109,240,.16);color:#9db8ff;border:1px solid rgba(59,109,240,.4)}
+.changed .t-deal{background:rgba(216,176,106,.14);color:var(--amber);border:1px solid rgba(216,176,106,.45)}
+.changed .t-gone{background:var(--panel);color:var(--muted);border:1px solid var(--line)}
+.changed .ch-w b.up{color:var(--green)}
+.changed .ch-w b.dn{color:var(--red)}
+/* Idea 2: compressed rows with click-to-expand provider compare */
+.exp-row{display:none}
+tr.open+tr.exp-row{display:table-row}
+.exp-row td{background:var(--bg);padding:12px 14px;white-space:normal;border-bottom:1px solid var(--line)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:680px}
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+.card.best{outline:1px solid rgba(111,220,155,.6);outline-offset:-1px}
+.card .chd{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.card .prov-n{font-weight:700;font-size:12.5px}
+.card .crow{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);padding:2.5px 0}
+.card .crow b{color:var(--text);font-weight:600}
+.card .eff{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.best-tag2{display:inline-block;font-size:9px;font-weight:800;padding:1px 6px;border-radius:8px;letter-spacing:.6px;color:#05220f;background:var(--green)}
+.win-lbl{display:inline-block;font-size:10px;padding:2px 7px;border-radius:9px;background:rgba(111,220,155,.14);color:var(--green);border:1px solid rgba(111,220,155,.45)}
+.win-nous{display:inline-block;font-size:10px;padding:2px 7px;border-radius:9px;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+.win-cc{display:inline-block;font-size:10px;padding:2px 7px;border-radius:9px;background:rgba(216,176,106,.12);color:var(--amber);border:1px solid rgba(216,176,106,.45)}
+#body tr{cursor:pointer}
 .tie{color:var(--dim);opacity:.8}
 .tie b{font-weight:400;border-bottom:1px dotted var(--dim)}
 .cb{background-repeat:no-repeat;background-position:left bottom;background-size:100% 5px}
@@ -74,7 +118,7 @@ tr.me td{background:rgba(216,176,106,.08)}
 .foot{color:var(--muted);font-size:11px;margin-top:12px;line-height:1.7}
 .note{color:var(--muted);font-size:11px}
 </style></head><body><div class="wrap">
-<div class="hd"><div class="kicker">Model Scoreboard</div><div class="stamp" id="stamp" title=""><span class="lab" id="stamp-lab">Updated</span><span id="stamp-when">—</span></div><div class="lang"><button id="l-en">EN</button><button id="l-ko" class="on">한국어</button></div><button id="reset" type="button">Reset</button></div>
+<div class="hd"><div class="kicker">Model Scoreboard</div><div class="stamp" id="stamp" title=""><span class="lab" id="stamp-lab">Updated</span><span id="stamp-when">—</span></div><div class="lang"><button id="l-en" class="on">EN</button><button id="l-ko">한국어</button></div><button id="reset" type="button">Reset</button></div>
 
 <div class="hero" id="hero">
   <div class="verdict" id="v-line"></div>
@@ -83,18 +127,16 @@ tr.me td{background:rgba(216,176,106,.08)}
     <div class="why" id="v-why"></div>
   </div>
   <div class="num"><div class="big" id="v-score"></div><div class="unit" id="v-unit"></div></div>
-  <div class="acts">
-    <button class="btn keep" id="b-keep" type="button"></button>
-    <button class="btn up" id="b-up" type="button"></button>
-  </div>
 </div>
 
 <div class="fron"><div class="fl" id="fron-lbl"></div><div id="fron-main"></div></div>
 
+<div class="changed" id="changed" style="display:none"><div class="ch-hd" id="ch-hd"></div><div class="ch-body" id="ch-body"></div><div class="ch-src" id="ch-src"></div></div>
 <div class="bar">
   <button type="button" class="chip on" id="c-floor">49+</button>
   <button type="button" class="chip on" id="c-prev" title="hide models scoring below the lowest score of the previous data refresh">prev floor</button>
   <input type="text" id="q" placeholder="">
+  <div class="tgl" id="view-tgl"><button class="on" data-v="table" id="v-table">table</button><button data-v="matrix" id="v-matrix">matrix</button></div>
   <button type="button" class="more-t" id="more-t"></button>
 </div>
 <div class="more" id="more">
@@ -112,22 +154,31 @@ tr.me td{background:rgba(216,176,106,.08)}
 </div>
 
 <div class="cnt" id="cnt"></div>
-<table><thead><tr>
-  <th id="th-role"></th><th id="th-model"></th><th id="th-prov"></th>
+<div id="view-table"><table><thead><tr>
+  <th id="th-model"></th>
   <th class="n" onclick="setSort('intel')" id="th-score"></th>
-  <th id="th-shape"></th>
-  <th class="n" id="th-delta"></th>
+  <th id="th-best"></th>
   <th class="n" onclick="setSort('cost')" id="th-cost"></th>
   <th class="n" onclick="setSort('week')" id="th-week"></th>
   <th class="n" onclick="setSort('ratio')" id="th-ratio"></th>
-</tr></thead><tbody id="body"></tbody></table>
+</tr></thead><tbody id="body"></tbody></table></div>
+<div id="view-matrix" style="display:none"><table class="mx"><thead><tr>
+  <th id="mx-model"></th>
+  <th class="n" id="mx-score"></th>
+  <th id="mx-nous"></th>
+  <th id="mx-cc"></th>
+  <th id="mx-best"></th>
+  <th id="mx-margin"></th>
+</tr></thead><tbody id="mbody"></tbody></table></div>
 <div class="foot" id="foot"></div>
 </div>
 <script>
 const $=s=>document.querySelector(s);
-const ME='deepseek/deepseek-v4-flash-0731';
+const ME='z-ai/glm-5.3-flash';
 const FLOOR=49;
-let ROWS=[],LANG='ko',sortKey='ratio',floorOn=true,CHANGED_AT=null;
+let ROWS=[],LANG='en',sortKey='ratio',floorOn=true,CHANGED_AT=null,SHAPE_BASE=null,VIEW='table',NOUS_CAT={},CC_LIST=[];
+const SNAP_KEY='sb.changed.v1';
+const CH_SRC_LINKS=[['Nous catalog','https://inference-api.nousresearch.com/v1/models'],['CC API','https://api.commandcode.ai/provider/v1/models'],['CC pricing','https://commandcode.ai/docs/resources/pricing-limits']];
 const PREV_FLOOR_KEY='sb.prevFloor';
 let PREV_FLOOR={};
 try{PREV_FLOOR=JSON.parse(localStorage.getItem(PREV_FLOOR_KEY)||'{}')||{};}catch(e){PREV_FLOOR={};}
@@ -136,6 +187,8 @@ const fmtMoney=n=>'$'+(n<0.01?n.toFixed(4):n.toFixed(2));
 const short=id=>(id||'').split('/').pop().replace(/:batch$/,'');
 const isBatch=m=>/(:batch)\b/i.test(m.id||'');
 const srcs=m=>m.sources||[m.provider||'nous'];
+const normId=s=>String(s||'').toLowerCase().split('/').pop().replace(/_/g,'-');
+const nousCost=(k,c,f,o)=>{const p=NOUS_CAT[k];if(!p)return null;const pm=n=>n==null?null:n*1e6;const cr=pm(p.input_cache_read),pr=pm(p.prompt),co=pm(p.completion);if(cr==null||pr==null||co==null)return null;return (c*cr+f*pr+o*co)/1000;};
 const T={
   q:{en:'search',ko:'검색'},
   more:{en:'cost assumptions',ko:'비용 가정'},
@@ -156,7 +209,47 @@ const T={
   role:{en:'role',ko:'역할'},
   model:{en:'model',ko:'모델'},
   prov:{en:'provider',ko:'공급자'},
+  dealTip:{en:'Deal: {l} · until {e} · promo price applied',ko:'딜: {l} · 종료 {e} · 프로모 가격 적용'},
   shape:{en:'profile',ko:'자질'},
+  mModel:{en:'model',ko:'모델'},
+  mScore:{en:'intel',ko:'지능'},
+  mNous:{en:'Nous',ko:'누스'},
+  mCc:{en:'Command Code',ko:'커맨드 코드'},
+  mBest:{en:'best value',ko:'최고 가치'},
+  mMargin:{en:'margin',ko:'차이'},
+  mWin:{en:'WIN',ko:'최고'},
+  mOnlyNous:{en:'Nous only',ko:'누스 전용'},
+  mOnlyCc:{en:'CC only',ko:'CC 전용'},
+  mNew:{en:'new',ko:'신규'},
+  mNoBench:{en:'no bench yet',ko:'벤치마크 전'},
+  mSrc:{en:'source',ko:'출처'},
+  mScores:{en:'no benchmark',ko:'벤치마크 없음'},
+  changed:{en:'What changed',ko:'바뀐 것'},
+  chNew:{en:'{n} new on this refresh',ko:'이번 갱신에 {n} 추가'},
+  chGone:{en:'{n} no longer listed',ko:'{n} 목록에서 사라짐'},
+  chScore:{en:'{n}: score {a} to {b}',ko:'{n}: 지능 {a} → {b}'},
+  chCost:{en:'{n}: {a} to {b} /req',ko:'{n}: 요청당 {a} → {b}'},
+  chDeal:{en:'{n}: deal {a}',ko:'{n}: 딜 {a}'},
+  chNone:{en:'no substantial changes since last refresh',ko:'직전 갱신 대비 큰 변화 없음'},
+  chSrc:{en:'sources: Nous catalog API · Command Code API + pricing page',ko:'출처: 누스 카탈로그 API · 커맨드 코드 API + 가격 페이지'},
+  chSrcLink:{en:'live provider sources',ko:'실시간 공급자 출처'},
+  chKey:'sb.changed',
+  best:{en:'best deal',ko:'최고 딜'},
+  bWin:{en:'{p} {x}x',ko:'{p} {x}배'},
+  bNousOnly:{en:'Nous only',ko:'누스 전용'},
+  bCcOnly:{en:'CC only',ko:'CC 전용'},
+  bTie:{en:'tie',ko:'동일'},
+  pNous:{en:'Nous',ko:'누스'},
+  pCc:{en:'Command Code',ko:'커맨드 코드'},
+  eList:{en:'list rate',ko:'정가'},
+  eDeal:{en:'deal',ko:'딜'},
+  eEff:{en:'effective',ko:'실효'},
+  eWeek:{en:'wk @ real mix',ko:'주간(실사용)'},
+  eBest:{en:'BEST',ko:'최고'},
+  eNoBench:{en:'no benchmark yet',ko:'벤치마크 전'},
+  eSingle:{en:'listed on {p} only',ko:'{p}에만 등록'},
+  eHint:{en:'click a row for the per-provider compare',ko:'행을 클릭하면 공급자별 비교'},
+  pNames:{en:['Nous','Command Code'],ko:['누스','커맨드 코드']},
   tieTip:{en:'within benchmark noise (~2 pts) of another model — rank not separable',ko:'벤치마크 노이즈(~2점) 구간 — 서열 구분 불가'},
   score:{en:'score',ko:'지능'},
   delta:{en:'Δ vs yours',ko:'내 모델 대비'},
@@ -170,15 +263,17 @@ const T={
   meDot:{en:'you',ko:'현재'},
   hidden:{en:'{n} models below 49 hidden',ko:'49 미만 {n}개 숨김'},
   cnt:{en:'{n} of {t} scored',ko:'평가 {t}개 중 {n}개'},
-  foot:{en:'Batch (offline) models are left out of this chat ranking. wk @ real mix = your actual last-7-day traffic at this model\'s today list prices. Not the billed amount (subscription credits apply).',ko:'묶음 처리(batch) 모델은 대화용 순위에서 뺐습니다. 주간(실사용) = 지난 7일 실제 트래픽을 이 모델의 오늘 정가로 돌린 비용. 실제 청구액과는 다를 수 있습니다(구독 크레딧 적용).'},
+  foot:{en:'Batch (offline) models are left out of this chat ranking. All data is pulled live from the providers (Nous API, Command Code API + official pricing page) on every refresh - no local cache. wk @ real mix = live weekly request volume at this model\'s today list prices, default token mix (80k cache / 4k fresh / 4k out). Deal badge = live CC deal or GOAT credit multiplier, expired deals auto-drop.',ko:'묶음 처리(batch) 모델은 대화용 순위에서 뺐습니다. 모든 데이터는 새로고침 시 공급자(누스 API, 커맨드 코드 API + 공식 가격 페이지)에서 직접 가져옵니다. 로컬 캐시 없음. 주간(실사용) = 실시간 주간 요청량 × 오늘 정가, 기본 토큰 구성(캐시 80k/신규 4k/출력 4k). 딜 배지 = 실시간 CC 딜 또는 GOAT 크레딧 배수, 만료 딜 자동 제외.'},
   stamp:{en:'Changed',ko:'변경'},
   stampTitle:{en:'Last provider change: new model, price, or deal. Polling does not move this date.',ko:'공급자가 모델·가격·딜을 바꾼 마지막 시각. 단순 조회로는 날짜가 안 바뀝니다.'},
   rNow:{en:'now',ko:'지금'},
   rUp:{en:'upgrade',ko:'업그레이드'},
   rTop:{en:'top',ko:'최강'},
-  rRest:{en:'',ko:''}
+  rRest:{en:'',ko:''},
+  vRec:{en:'Recommended switch',ko:'추천 변경'},
+  whyRec:{en:'Smarter model, weekly cost gap under $1 at your real mix. Score +{s}.',ko:'더 똑똑한 모델, 실사용 주간 비용 차이 $1 미만. 지능 +{s}.'}
 };
-function fill(t,v){return t.replace('{n}',v.n||'').replace('{c}',v.c||'').replace('{t}',v.t||'').replace('{s}',v.s||'');}
+function fill(t,v){return t.replace('{n}',v.n||'').replace('{c}',v.c||'').replace('{t}',v.t||'').replace('{s}',v.s||'').replace('{a}',v.a??'').replace('{b}',v.b??'');}
 function providerOn(){return [...document.querySelectorAll('.chip[data-p].on')].map(b=>b.dataset.p);}
 function filtered(){
   const q=($('#q').value||'').toLowerCase();
@@ -189,8 +284,8 @@ function filtered(){
     if(rv==='yes'&&!m.reasoning)return false;
     if(rv==='no'&&m.reasoning)return false;
     if(sel.length){if(!sel.some(s=>srcs(m).includes(s)))return false;}
-    if(floorOn&&(m.score||0)<FLOOR)return false;
-    if(prevOn&&PREV_FLOOR[$('#metric').value]!=null&&(m.score||0)<PREV_FLOOR[$('#metric').value])return false;
+    if(floorOn&&(m.score||0)<FLOOR&&!m.ccOnly)return false;
+    if(prevOn&&PREV_FLOOR[$('#metric').value]!=null&&(m.score||0)<PREV_FLOOR[$('#metric').value]&&!m.ccOnly)return false;
     if(isBatch(m))return false;
     return true;
   });
@@ -207,6 +302,18 @@ function picks(rows){
   const strongest=[...live].sort((a,b)=>b.score-a.score)[0]||null;
   const cheaperSmarter=smarter.some(m=>me&&m.cost<me.cost);
   return {me,meIn,upgrade,strongest,keep:!cheaperSmarter,hidden:ROWS.length-rows.length};
+}
+function recommendation(live,me){
+  if(!me)return null;
+  const smarter=live.filter(m=>m.id!==ME&&(m.score||0)>me.score).sort((a,b)=>b.score-a.score);
+  if(!smarter.length)return null;
+  const worth=smarter.filter(m=>{
+    if((m.cost||0)<(me.cost||0))return true;
+    if(m.weekCost==null||me.weekCost==null)return false;
+    return (m.weekCost-me.weekCost)<=1.0;
+  });
+  if(!worth.length)return null;
+  return worth[0];
 }
 // Pareto frontier: models where no other model is both smarter and cheaper.
 // Costs are log-scaled because they span ~$0.0005 to $0.14.
@@ -236,11 +343,8 @@ function renderPareto(){
   const Y=s=>PT+(1-s/maxS)*(H-PT-PB);
   const shortId=id=>(id||'').split('/').pop().replace(/:batch$/,'');
   const me=live.find(m=>m.id===ME);
-  // upgrade pick, same rule as the hero: smarter than me, cheapest of those,
-  // preferably +4 or more; when none is cheaper the frontier still shows the gap
-  const meScore=me?me.score:0;
-  const smarter=live.filter(m=>m.id!==ME&&m.score>meScore).sort((a,b)=>a.cost-b.cost);
-  const prompt=smarter.find(m=>m.score>=meScore+4)||smarter[0]||null;
+  // pick = same rule as the hero: smarter than me, cheaper or within $1/week at real mix
+  const prompt=recommendation(live,me);
   // staircase: from left edge at the cheapest frontier point's height,
   // step right to each next frontier x at the old height, then up to its score
   let d='M '+PL.toFixed(1)+' '+Y(frontier[0].score).toFixed(1);
@@ -288,6 +392,11 @@ function hTri(tr,on){
   const dot=[...main.querySelectorAll('svg circle')].find(c=>c.getAttribute('data-id')===tr.dataset.id);
   if(dot){dot.classList.add('pt-hov');}
 }
+function toggleExpand(tr){
+  const open=tr.classList.contains('open');
+  document.querySelectorAll('#body tr.open').forEach(r=>r.classList.remove('open'));
+  if(!open){tr.classList.add('open');}
+}
 function selRow(tr){
   const id=tr.dataset.id;
   const main=$('#fron-main');
@@ -306,8 +415,22 @@ async function load(){
     const r=await fetch('/api/scoreboard?cached='+c+'&fresh='+f+'&out='+o+'&metric='+m);
     if(!r.ok)throw 0;
     const d=await r.json();ROWS=d.rows||[];CHANGED_AT=d.lastChangedAt||d.fetchedAt||null;
+    try{
+      const mr=await fetch('/api/models?cached='+c+'&fresh='+f+'&out='+o);
+      if(mr.ok){const md=await mr.json();NOUS_CAT={};(md.models||[]).forEach(x=>{const k=normId(x.id);if(x.pricing)NOUS_CAT[k]=x.pricing;});}
+      const pr=await fetch('/api/providers');
+      if(pr.ok){const pd=await pr.json();CC_LIST=(pd.providers&&pd.providers[0]&&pd.providers[0].models||[]).map(m=>m.model||m.id||'');}
+    }catch(e){}
+    {
+      const full=ROWS.filter(x=>x.intelligence!=null&&x.coding!=null&&x.agentic!=null&&(x.id||'').indexOf(':batch')<0);
+      if(full.length>=10){
+        const avg=a=>full.reduce((s,x)=>s+x[a],0)/full.length;
+        const c=avg('score');
+        SHAPE_BASE=[avg('intelligence')-c,avg('coding')-c,avg('agentic')-c];
+      } else SHAPE_BASE=null;
+    }
     if(prevOn&&!($('#q').value||'').trim()){
-      const frows=filtered();
+      const frows=filtered().filter(x=>!x.ccOnly);
       if(frows.length){
         PREV_FLOOR[$('#metric').value]=Math.min(...frows.map(x=>x.score||0));
         try{localStorage.setItem(PREV_FLOOR_KEY,JSON.stringify(PREV_FLOOR));}catch(e){}
@@ -315,6 +438,7 @@ async function load(){
     }
     render();
     renderPareto();
+    renderChanged();
   }catch(e){}
 }
 function fmtStamp(iso){
@@ -348,7 +472,7 @@ function resetToDefaults(){
   prevOn=true;$('#c-prev').classList.add('on');
   document.querySelectorAll('#reason-tgl button').forEach(b=>b.classList.toggle('on',b.dataset.v==='all'));
   document.querySelectorAll('.chip[data-p]').forEach(b=>b.classList.add('on'));
-  LANG='ko';$('#l-ko').classList.add('on');$('#l-en').classList.remove('on');
+  LANG='en';$('#l-en').classList.add('on');$('#l-ko').classList.remove('on');
   load();
 }
 function render(){
@@ -358,12 +482,9 @@ function render(){
   $('#more-t').textContent=T.more[lang];
   $('#lbl-metric').textContent=T.metric[lang];
   $('#metric').title=($('#metric').value==='composite')?T.metricTitle[lang]:T.metricTitle1[lang];
-  $('#th-role').textContent=T.role[lang];
   $('#th-model').textContent=T.model[lang];
-  $('#th-prov').textContent=T.prov[lang];
-  $('#th-shape').textContent=T.shape[lang];
   $('#th-score').textContent=T.score[lang];
-  $('#th-delta').textContent=T.delta[lang];
+  $('#th-best').textContent=T.best[lang];
   $('#th-cost').textContent=T.cost[lang];
   $('#th-week').textContent=T.week[lang];
   $('#th-ratio').textContent=T.ratio[lang];
@@ -382,50 +503,156 @@ function render(){
   const p=picks(rows);
   const me=p.me;
   const meWeek=me?me.weekCost:null;
-  const keep=p.keep||!p.upgrade;
-  const dom=p.upgrade&&me&&p.upgrade.cost<me.cost;
-  $('#v-line').textContent=dom?T.vDom[lang]:(keep?T.vKeep[lang]:T.vUp[lang]);
-  $('#v-name').textContent=me?T.meName[lang]:'—';
-  let why=dom?T.whyDom[lang]:(keep?T.whyKeep[lang]:T.whyUp[lang]);
-  if(me&&!p.meIn)why=T.whyGone[lang];
-  $('#v-why').textContent=why;
-  $('#v-score').textContent=me?me.score.toFixed(1):'—';
-  $('#v-unit').textContent=fill(T.unit[lang],{c:me?fmtMoney(me.cost):'—'});
-  $('#b-keep').textContent=T.keep[lang];
-  if(p.upgrade){
-    $('#b-up').style.display='inline-block';
-    $('#b-up').textContent=fill(T.up[lang],{n:short(p.upgrade.id),s:p.upgrade.score.toFixed(1),c:fmtMoney(p.upgrade.cost)});
-  }else{$('#b-up').style.display='none';}
+  const rec=recommendation(livePool(ROWS),me);
+  const hero=$('#hero');
+  if(rec&&me){
+    hero.style.display='grid';
+    $('#v-line').textContent=T.vRec[lang];
+    $('#v-name').textContent=short(rec.id);
+    const gap=(me.weekCost!=null&&rec.weekCost!=null)?' · '+(rec.weekCost<=me.weekCost?'−':'+')+fmtMoney(Math.abs(rec.weekCost-me.weekCost))+'/wk':'';
+    $('#v-why').textContent=fill(T.whyRec[lang],{s:(rec.score-me.score).toFixed(1)})+gap;
+    $('#v-score').textContent=rec.score.toFixed(1);
+    $('#v-unit').textContent=fill(T.unit[lang],{c:fmtMoney(rec.cost)});
+  }else{
+    hero.style.display='none';
+  }
 
   $('#cnt').textContent=fill(T.cnt[lang],{n:String(rows.length),t:String(ROWS.length)})+(floorOn?' · 49+':'');
   let h='';
   rows.forEach(r=>{
     const isMe=r.id===ME;
     const onCc=srcs(r).includes('commandcode');
-    const role=isMe?T.rNow[lang]:(p.upgrade&&r.id===p.upgrade.id?T.rUp[lang]:(p.strongest&&r.id===p.strongest.id?T.rTop[lang]:''));
+    const role=isMe?T.rNow[lang]:(rec&&r.id===rec.id?T.rUp[lang]:(p.strongest&&r.id===p.strongest.id?T.rTop[lang]:''));
     const ratioText=r.ratio==null?'—':Math.round(r.ratio).toLocaleString();
     const tags=(isMe?'<span class="tag me">'+T.yours[lang]+'</span>':'')+(r.free?'<span class="tag free">free</span>':'')+(isBatch(r)?'<span class="tag">batch</span>':'');
-    const dScore=me?r.score-me.score:null;
-    const dCost=me?r.cost-me.cost:null;
-    const deltaText=isMe?'—':(me?((dScore>=0?'+':'')+dScore.toFixed(1)+' · '+(dCost<=0?'−':'+')+fmtMoney(Math.abs(dCost))):'—');
     const band=Math.round((r.score||0)/2);
     const tied=(bands[band]||[]).length>=2;
-    const provCell=srcs(r).includes('commandcode')?'<span class="tag cc">Nous · CC</span>':'<span class="tag pr-n">Nous</span>';
+    const dlTag=r.deal?'<span class="tag dl" title="'+fill(T.dealTip[lang],{l:r.deal.label,e:r.deal.expiry||'∞'})+' ">'+r.deal.label+(r.deal.expiry?(' ~'+r.deal.expiry.slice(5).replace('-','/')):' ∞')+'</span>':'';
     const ratioPct=r.ratio?Math.max(2,Math.round(r.ratio/maxRatio*100)):0;
     const weekPct=(r.weekCost!=null&&meWeek)?Math.min(100,Math.max(2,Math.round(r.weekCost/meWeek*100))):(r.weekCost!=null?2:0);
     const weekCol=r.weekCost!=null&&meWeek&&r.weekCost<=meWeek?'rgba(111,220,155,.5)':'rgba(59,109,240,.45)';
     const weekStyle='background-image:linear-gradient(90deg,'+weekCol+' 0%,'+weekCol+' '+weekPct+'%,transparent '+weekPct+'%)';
     const ratioStyle='background-image:linear-gradient(90deg,rgba(59,109,240,.45) 0%,rgba(59,109,240,.45) '+ratioPct+'%,transparent '+ratioPct+'%)';
-    const shapeBars=[r.intelligence,r.coding,r.agentic];
-    const shapeAcc=$('#metric').value==='intelligence'?0:($('#metric').value==='coding'?1:($('#metric').value==='agentic'?2:-1));
-    const shapeCell='<td class="shape" title="intel '+(shapeBars[0]==null?'-':shapeBars[0])+' · coding '+(shapeBars[1]==null?'-':shapeBars[1])+' · agentic '+(shapeBars[2]==null?'-':shapeBars[2])+'">'+shapeBars.map((v,i)=>{const h=v==null?2:Math.min(100,Math.max(0,v))/100*24+2;return '<div class="sb'+(i===shapeAcc?' on':'')+'" style="height:'+h.toFixed(1)+'px"></div>';}).join('')+'</td>';
-    h+='<tr class="'+(isMe?'me':'')+'" data-id="'+r.id+'" onclick="selRow(this)"><td>'+role+'</td><td>'+(isMe?T.meName[lang]:short(r.id))+tags+'</td><td>'+provCell+'</td><td class="n'+(tied?' tie':'')+'" title="'+(tied?T.tieTip[lang]:'')+'">'+r.score.toFixed(1)+'</td>'+shapeCell+'<td class="n">'+deltaText+'</td><td class="n">'+fmtMoney(r.cost)+'</td><td class="n cb" style="'+weekStyle+'">'+(r.weekCost==null?'—':fmtMoney(r.weekCost))+'</td><td class="n cb" style="'+ratioStyle+'">'+ratioText+'</td></tr>';
+    // Idea 2 winner chip: which provider carries the effective price, with the multiple vs the other provider
+    const noNous={en:'Nous only',ko:'누스 전용'};
+    const noCc={en:'CC only',ko:'CC 전용'};
+    const cc=Number($('#cached').value),fr=Number($('#fresh').value),ou=Number($('#out').value);
+    const nP=onCc?nousCost(normId(r.id),cc,fr,ou):(r.cost!=null?r.cost:null);
+    const cP=onCc?r.cost:null;
+    let bestCell='<span class="win-nous">'+noNous[lang]+'</span>';
+    if(nP!=null&&cP!=null){
+      if(cP<nP)bestCell='<span class="win-lbl">'+T.pCc[lang]+' '+(nP/cP).toFixed(1)+'x</span>';
+      else if(nP<cP)bestCell='<span class="win-nous">'+T.pNous[lang]+' '+(cP/nP).toFixed(1)+'x</span>';
+      else bestCell='<span class="win-nous">tie</span>';
+    } else if(cP!=null){bestCell='<span class="win-cc">'+noCc[lang]+'</span>';}
+    // expandable per-provider compare cards
+    let cards='';
+    if(cP!=null){
+      const best=nP!=null&&cP<nP;
+      cards+='<div class="card'+(best?' best':'')+'"><div class="chd"><span class="prov-n">'+T.pCc[lang]+'</span>'+(best?'<span class="best-tag2">'+T.eBest[lang]+'</span>':'')+'</div><div class="crow"><span>'+T.eEff[lang]+'</span><b class="eff" style="color:'+(best?'var(--green)':'')+'">'+fmtMoney(cP)+' / req</b></div>'+(r.deal?'<div class="crow"><span>'+T.eDeal[lang]+'</span><b><span class="tag dl">'+r.deal.label+(r.deal.expiry?' ~'+r.deal.expiry.slice(5).replace('-','/'):'')+'</span></b></div>':'')+'<div class="crow"><span>'+T.eWeek[lang]+'</span><b>'+(r.weekCost!=null?fmtMoney(r.weekCost):'—')+'</b></div></div>';
+    }
+    if(nP!=null){
+      const nWeek=r.weekCost!=null&&onCc?null:null;
+      cards+='<div class="card'+(cP!=null&&nP<cP?' best':'')+'"><div class="chd"><span class="prov-n">'+T.pNous[lang]+'</span>'+(cP!=null&&nP<cP?'<span class="best-tag2">'+T.eBest[lang]+'</span>':'')+'</div><div class="crow"><span>'+T.eEff[lang]+'</span><b class="eff" style="color:'+(cP!=null&&nP<cP?'var(--green)':'')+'">'+fmtMoney(nP)+' / req</b></div>'+(r.deal?'<div class="crow"><span>'+T.eDeal[lang]+'</span><b>none</b></div>':'')+(nWeek!=null?'<div class="crow"><span>'+T.eWeek[lang]+'</span><b>'+fmtMoney(nWeek)+'</b></div>':'')+'</div>';
+    }
+    if(!cards){cards='<div class="card"><div class="chd"><span class="prov-n">'+T.eNoBench[lang]+'</span></div></div>';}
+    h+='<tr class="'+(isMe?'me':'')+'" data-id="'+r.id+'" onclick="selRow(this);toggleExpand(this)"><td>'+role+short(r.id)+dlTag+tags+'</td><td class="n'+(tied?' tie':'')+'" title="'+(tied?T.tieTip[lang]:'')+'">'+(r.score!=null?r.score.toFixed(1):'—')+'</td><td>'+bestCell+'</td><td class="n">'+fmtMoney(r.cost)+'</td><td class="n cb" style="'+weekStyle+'">'+(r.weekCost==null?'—':fmtMoney(r.weekCost))+'</td><td class="n cb" style="'+ratioStyle+'">'+ratioText+'</td></tr><tr class="exp-row" data-exp="'+r.id+'"><td colspan="6"><div class="cmp">'+cards+'</div></td></tr>';
   });
   $('#body').innerHTML=h;
-  document.querySelectorAll('#body tr').forEach(tr=>{
+  document.querySelectorAll('#body tr[data-id]').forEach(tr=>{
     tr.addEventListener('mouseenter',()=>hTri(tr,true));
     tr.addEventListener('mouseleave',()=>hTri(tr,false));
   });
+  $('#view-table').style.display=VIEW==='table'?'':'none';
+  $('#view-matrix').style.display=VIEW==='matrix'?'':'none';
+  if(VIEW==='matrix')renderMatrix();
+}
+function renderMatrix(){
+  const lang=LANG;
+  $('#mx-model').textContent=T.mModel[lang];
+  $('#mx-score').textContent=T.mScore[lang];
+  $('#mx-nous').textContent=T.mNous[lang];
+  $('#mx-cc').textContent=T.mCc[lang]+'<span style="display:none">'+T.mSrc[lang]+'</span>';
+  $('#mx-best').textContent=T.mBest[lang];
+  $('#mx-margin').textContent=T.mMargin[lang];
+  const c=Number($('#cached').value),f=Number($('#fresh').value),o=Number($('#out').value);
+  const rows=filtered().filter(m=>!isBatch(m)).slice();
+  rows.sort((a,b)=>(b.score||0)-(a.score||0));
+  const p=[];
+  for(const r of rows){
+    const k=normId(r.id);
+    const onCc=srcs(r).includes('commandcode');
+    const nPrice=onCc?nousCost(k,c,f,o):(r.cost!=null?r.cost:null); // both: nous list from catalog; nous-only: row.cost is the nous price
+    const ccPrice=onCc?r.cost:null;
+    const nCell=nPrice!=null?('<span class="mcell'+(ccPrice!=null&&nPrice<ccPrice?' win':'')+'"><span class="mlab">'+T.mNous[lang]+'</span><span class="pr">'+fmtMoney(nPrice)+'</span></span>'):'<span class="mcell none">'+T.mScores[lang]+'</span>';
+    const cCell=ccPrice!=null?('<span class="mcell'+(nPrice!=null&&ccPrice<nPrice?' win':'')+'"><span class="mlab">'+T.mCc[lang]+'</span><span class="pr">'+fmtMoney(ccPrice)+'</span>'+(r.deal?'<div class="dl">'+r.deal.label+(r.deal.expiry?' ~'+r.deal.expiry.slice(5).replace('-','/'):'')+'</div>':'')+'</span>'):'<span class="mcell none">—</span>';
+    let best='',marg='';
+    if(nPrice!=null&&ccPrice!=null){
+      if(ccPrice<nPrice){best='<span class="best-tag">'+T.mCc[lang]+'</span>';marg='<span class="marg">'+T.mCc[lang]+' '+(nPrice/ccPrice).toFixed(1)+'x</span>';}
+      else if(nPrice<ccPrice){best='<span class="best-tag">'+T.mNous[lang]+'</span>';marg='<span class="marg">'+T.mNous[lang]+' '+(ccPrice/nPrice).toFixed(1)+'x</span>';}
+      else {best='<span class="best-tag">'+T.mWin[lang]+'</span>';marg='<span class="marg">1.0x</span>';}
+    } else if(nPrice!=null){best='<span class="marg" style="color:var(--muted)">'+T.mOnlyNous[lang]+'</span>';marg='—';}
+    else if(ccPrice!=null){best='<span class="marg amber">'+T.mOnlyCc[lang]+'</span>';marg='<span class="marg amber">'+T.mNew[lang]+'</span>';}
+    else {best='<span class="marg" style="color:var(--muted)">'+T.mScores[lang]+'</span>';marg='—';}
+    const isMe=r.id===ME;
+    p.push('<tr class="'+(isMe?'me':'')+'" data-id="'+r.id+'"><td><b>'+short(r.id)+'</b>'+(r.free?'<span class="tag free">free</span>':'')+(isMe?'<span class="tag me">'+T.yours[lang]+'</span>':'')+'</td><td class="n">'+(r.score!=null?r.score.toFixed(1):'—')+'</td><td>'+nCell+'</td><td>'+cCell+'</td><td>'+best+'</td><td>'+marg+'</td></tr>');
+  }
+  $('#mbody').innerHTML=p.join('');
+}
+function renderChanged(){
+  const lang=LANG;
+  const el=$('#changed');
+  const hd=$('#ch-hd'),body=$('#ch-body'),src=$('#ch-src');
+  if(!el)return;
+  const snap={};
+  const live=ROWS.filter(r=>!isBatch(r));
+  for(const r of live){
+    snap[normId(r.id)]={s:r.score!=null?Math.round(r.score*10)/10:null,c:r.cost!=null?Math.round(r.cost*1e6)/1e6:null,dl:r.deal?r.deal.label:null};
+  }
+  let prev={};
+  try{prev=JSON.parse(localStorage.getItem(SNAP_KEY)||'{}')||{};}catch(e){prev={};}
+  if(!Object.keys(prev).length){try{localStorage.setItem(SNAP_KEY,JSON.stringify(snap));}catch(e){}return;}
+  const rows=[];
+  const nowIds=Object.keys(snap),prevIds=Object.keys(prev);
+  for(const id of nowIds){
+    if(prevIds.indexOf(id)<0){rows.push({t:'new',n:short(id)});continue;}
+    const a=prev[id],b=snap[id];
+    if(a.s!=null&&b.s!=null&&Math.abs(a.s-b.s)>=2&&a.s!==b.s)rows.push({t:'score',n:short(id),a:a.s,b:b.s});
+    else if(a.s==null&&b.s!=null)rows.push({t:'score',n:short(id),a:null,b:b.s});
+    if(a.c!=null&&b.c!=null&&a.c>0&&(Math.abs(a.c-b.c)/a.c)>=0.15&&a.c!==b.c)rows.push({t:'cost',n:short(id),a:a.c,b:b.c});
+    if(a.dl!==b.dl)rows.push({t:'deal',n:short(id),a:b.dl||'none'});
+  }
+  for(const id of prevIds){if(nowIds.indexOf(id)<0)rows.push({t:'gone',n:short(id)});}
+  const cap=10;
+  const shown=rows.slice(0,cap);
+  const more=rows.length-cap;
+  let html='';
+  for(const r of shown){
+    if(r.t==='new')html+='<div class="ch-row"><span class="ch-emo">🌱</span><span class="tag t-new">new</span><span class="ch-what">'+fill(T.chNew[lang],{n:r.n})+'</span></div>';
+    else if(r.t==='gone')html+='<div class="ch-row"><span class="ch-emo">🫥</span><span class="tag t-gone">gone</span><span class="ch-what">'+fill(T.chGone[lang],{n:r.n})+'</span></div>';
+    else if(r.t==='score'){
+      const up=r.b>=(r.a!=null?r.a:r.b);
+      const cc=up?'up':'dn';
+      html+='<div class="ch-row"><span class="ch-emo">'+(up?'📈':'📉')+'</span><span class="tag '+(up?'t-up':'t-down')+'">score</span><span class="ch-what">'+fill(T.chScore[lang],{n:r.n,a:'<span class="'+(up?'':'dn')+'">'+(r.a!=null?r.a.toFixed(1):'—')+'</span>',b:'<b class="'+cc+'">'+r.b.toFixed(1)+'</b>'})+'</span></div>';
+    }
+    else if(r.t==='cost'){
+      const down=r.b<r.a;
+      html+='<div class="ch-row"><span class="ch-emo">'+(down?'🪙':'🔺')+'</span><span class="tag '+(down?'t-up':'t-down')+'">cost</span><span class="ch-what">'+fill(T.chCost[lang],{n:r.n,a:fmtMoney(r.a),b:'<b class="'+(down?'up':'dn')+'">'+fmtMoney(r.b)+'</b>'})+'</span></div>';
+    }
+    else if(r.t==='deal'){
+      const expired=r.a==='none'||r.a==null;
+      html+='<div class="ch-row"><span class="ch-emo">'+(expired?'⏳':'🏷️')+'</span><span class="tag '+(expired?'t-gone':'t-deal')+'">deal</span><span class="ch-what">'+fill(T.chDeal[lang],{n:r.n,a:r.a})+'</span></div>';
+    }
+  }
+  if(more>0)html+='<div class="ch-row"><span class="ch-pro">+'+(more)+' more</span></div>';
+  if(!shown.length){el.style.display='none';}
+  else{
+    el.style.display='';
+    hd.textContent=T.changed[lang];
+    body.innerHTML=html;
+    src.innerHTML=T.chSrc[lang]+' — '+CH_SRC_LINKS.map(l=>'<a href="'+l[1]+'" target="_blank" rel="noopener">'+l[0]+'</a>').join(' · ');
+  }
+  try{localStorage.setItem(SNAP_KEY,JSON.stringify(snap));}catch(e){}
 }
 $('#metric').addEventListener('change',load);
 $('#cached').addEventListener('input',()=>{$('#cached-v').textContent=Math.round($('#cached').value)+'k';load();});
@@ -438,6 +665,11 @@ $('#c-floor').addEventListener('click',()=>{floorOn=!floorOn;$('#c-floor').class
 $('#c-prev').addEventListener('click',()=>{prevOn=!prevOn;$('#c-prev').classList.toggle('on',prevOn);render();});
 $('#more-t').addEventListener('click',()=>$('#more').classList.toggle('on'));
 $('#reset').addEventListener('click',resetToDefaults);
+document.querySelectorAll('#view-tgl button').forEach(b=>b.addEventListener('click',()=>{
+  VIEW=b.dataset.v;
+  document.querySelectorAll('#view-tgl button').forEach(x=>x.classList.toggle('on',x===b));
+  render();
+}));
 $('#l-en').addEventListener('click',()=>{LANG='en';$('#l-en').classList.add('on');$('#l-ko').classList.remove('on');render();});
 $('#l-ko').addEventListener('click',()=>{LANG='ko';$('#l-ko').classList.add('on');$('#l-en').classList.remove('on');render();});
 load();

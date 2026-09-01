@@ -1,17 +1,19 @@
-// Nous Portal dashboard - local server
-// Holds the API key server-side, proxies the live catalog, serves an interactive dashboard.
+// Model Scoreboard - local server
+// Holds the API key server-side, proxies the live provider catalog, serves an interactive dashboard.
+// All data comes from live provider APIs at refresh time - no local cache files:
+//   catalog/benchmarks/prices from Nous Portal API, CC pricing+deals+usage from Command Code's
+//   official API and pricing page (parsed server-side in live-data.mjs).
 // Run:  NOUS_API_KEY="sk-nous-..." node server.mjs  (defaults to localhost:8347)
 import http from 'node:http';
 import { readFile, writeFile, rename, mkdir } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import os from 'node:os';
-import { parseUsageCSV, usageByModel, recommendations } from './usage.mjs';
-import { allProviders } from './providers.mjs';
 import { commandCodeUsage } from './cmd-usage.mjs';
 import { scoreboard } from './scoreboard.mjs';
+import { deriveDeals, liveRealMix, ccLiveSnapshot } from './live-data.mjs';
 
 const PORT = Number(process.env.PORT || 8347);
 const API = 'https://inference-api.nousresearch.com/v1';
@@ -22,28 +24,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Aside routing config: the local file that decides which model new Aside
 // sessions use. The apply feature writes here, gated by a confirm step.
 const ASIDE_SETTINGS = path.join(os.homedir(), '.aside', 'u', '0', 'settings.json');
-
-// Real usage profile from usage.csv: requests per week and per-request token mix
-// (cache-read, fresh input, output). Drives the honest weekly-cost column.
-function realUsageProfile(rows) {
-  let req = 0, cacheRead = 0, fresh = 0, out = 0, spend = 0;
-  for (const r of rows) {
-    if (!r.model) continue; // tool/subscription rows are not model inference
-    req += r.requests || 0;
-    cacheRead += r.cacheRead || 0;
-    fresh += Math.max(0, (r.input || 0) - (r.cacheRead || 0));
-    out += r.output || 0;
-    spend += r.net < 0 ? -r.net : 0; // billed dollars, exact from the export
-  }
-  if (!req) return null;
-  return {
-    reqPerWeek: req,
-    cachePerReq: cacheRead / req,
-    freshPerReq: fresh / req,
-    outPerReq: out / req,
-    actualSpend: spend,
-  };
-}
 
 // Cache the catalog briefly so the dashboard isn't hammering the API on every render.
 let cache = { data: null, ts: 0 };
@@ -111,21 +91,6 @@ async function getCatalog() {
 
 function catalogFetchedAt() {
   return cache.ts ? new Date(cache.ts).toISOString() : null;
-}
-
-let usageRowsCache = { data: null, ts: 0 };
-const USAGE_TTL = 120_000;
-async function getUsageRows() {
-  if (usageRowsCache.data && Date.now() - usageRowsCache.ts < USAGE_TTL) return usageRowsCache.data;
-  let text;
-  try {
-    text = await readFile(path.join(__dirname, 'usage.csv'), 'utf8');
-  } catch {
-    return [];
-  }
-  const rows = parseUsageCSV(text);
-  usageRowsCache = { data: rows, ts: Date.now() };
-  return rows;
 }
 
 // ---- Yes-gate apply: one pending apply at a time, must be confirmed ----
@@ -200,15 +165,29 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === '/api/providers') {
     try {
-      const rows = await getUsageRows();
-      const usage = usageByModel(rows);
-      const cmdUsage = await commandCodeUsage();
-      const provs = allProviders(usage, {
-        grok: { flatFeeMonthly: 9.9 },
-        commandCode: cmdUsage,
-      });
+      const [cmdUsage, live] = await Promise.all([commandCodeUsage(), ccLiveSnapshot()]);
+      const providers = [
+        {
+          id: 'commandcode',
+          name: 'Command Code',
+          costModel: cmdUsage.measurable ? 'per-request' : 'subscription',
+          measurable: cmdUsage.measurable,
+          note: cmdUsage.note || 'Live from the Command Code Provider API.',
+          totalCost: null,
+          credits: live.credits || null,
+          plan: live.sub ? { planId: live.sub.planId, status: live.sub.status, cancelAtPeriodEnd: !!live.sub.cancelAtPeriodEnd } : null,
+          usageSummary: live.summary ? {
+            count: live.summary.totalCount,
+            cost: live.summary.totalCost,
+            tokensIn: live.summary.totalTokensIn,
+            tokensOut: live.summary.totalTokensOut,
+            successRate: live.summary.successRate,
+          } : null,
+          models: cmdUsage.models || [],
+        },
+      ];
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ providers: provs }));
+      res.end(JSON.stringify({ providers, fetchedAt: live.fetchedAt }));
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: e.message }));
@@ -224,9 +203,36 @@ const server = http.createServer(async (req, res) => {
       const outK = Number(url.searchParams.get('out')) || 4;
       const metric = url.searchParams.get('metric') || 'intelligence';
       const commandCodeIds = (cmd.models || []).map(m => m.model);
-      const usageRows = await getUsageRows();
-      const realMix = realUsageProfile(usageRows);
-      const rows = scoreboard(catalog, { cachedK, freshK, outK, metric, commandCodeIds, realMix });
+      const [realMix, deals] = await Promise.all([liveRealMix(), deriveDeals()]);
+      const rows = scoreboard(catalog, { cachedK, freshK, outK, metric, commandCodeIds, realMix, deals });
+      // CC-only models: present in the Command Code provider API but absent from
+      // the Nous catalog (no benchmark, so scoreboard() cannot row them). Merge
+      // them as unscored rows when the live CC deal/pricing gives effective rates.
+      const normM = s => String(s || '').toLowerCase().split('/').pop().replace(/_/g, '-');
+      const nousNorms = new Set((catalog || []).map(m => normM(m.id)));
+      const ccOnlyIds = (cmd.models || []).map(m => m.model || m.id || '').filter(id => !nousNorms.has(normM(id)));
+      const dealFor = id => (deals || []).find(d => (d.ids || []).some(x => normM(x) === normM(id))) || null;
+      for (const cid of ccOnlyIds) {
+        if (rows.some(r => normM(r.id) === normM(cid))) continue;
+        const dl = dealFor(cid);
+        const effCr = dl && dl.cacheRead != null ? Number(dl.cacheRead) : null;
+        const effPr = dl && dl.prompt != null ? Number(dl.prompt) : null;
+        const effCo = dl && dl.completion != null ? Number(dl.completion) : null;
+        if (effCr == null || effPr == null || effCo == null) continue; // no live CC pricing yet
+        const cost = (cachedK * effCr + freshK * effPr + outK * effCo) / 1000;
+        const weekCost = realMix ? realMix.reqPerWeek * (
+          (effCr / 1e6) * realMix.cachePerReq + (effPr / 1e6) * realMix.freshPerReq + (effCo / 1e6) * realMix.outPerReq
+        ) : null;
+        const ccName = ((cmd.models || []).find(m => (m.model || m.id) === cid) || {}).name || cid;
+        rows.push({
+          id: cid, name: ccName, metric, intelligence: null, coding: null, agentic: null,
+          score: null, cost, weekCost, ratio: null, ctx: 0, reasoning: false,
+          cacheRead: effCr, free: cost === 0,
+          deal: dl ? { label: dl.label, expiry: dl.expiry || null, note: dl.note || null } : null,
+          provider: 'commandcode', sources: ['commandcode'], weekReq: realMix ? realMix.reqPerWeek : null,
+          ccOnly: true,
+        });
+      }
       const ccScored = rows.filter(r => (r.sources || []).includes('commandcode')).length;
       const change = await trackCatalogChange(catalog, commandCodeIds);
       res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -237,6 +243,8 @@ const server = http.createServer(async (req, res) => {
         changed: change.changed,
         commandCode: { live: commandCodeIds.length, scored: ccScored, measurable: !!cmd.measurable },
         realMix,
+        deals: deals.length,
+        dataSource: 'live providers (Nous catalog API + Command Code API/pricing page); no local cache',
         rows,
       }));
     } catch (e) {
@@ -248,9 +256,15 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === '/api/usage') {
     try {
-      const rows = await getUsageRows();
+      const live = await ccLiveSnapshot();
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(usageByModel(rows)));
+      res.end(JSON.stringify({
+        source: 'live Command Code usage summary (no local export)',
+        summary: live.summary,
+        credits: live.credits,
+        plan: live.sub ? { planId: live.sub.planId, cancelAtPeriodEnd: !!live.sub.cancelAtPeriodEnd, currentPeriodEnd: live.sub.currentPeriodEnd } : null,
+        fetchedAt: live.fetchedAt,
+      }));
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: e.message }));
@@ -260,12 +274,13 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === '/api/recommend') {
     try {
-      const [catalog, rows] = await Promise.all([getCatalog(), getUsageRows()]);
-      const usage = usageByModel(rows);
-      const reasoningOnly = url.searchParams.get('reasoning') !== 'off';
-      const recs = recommendations(usage, catalog, { reasoningOnly });
+      const live = await ccLiveSnapshot();
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ usage, recs }));
+      res.end(JSON.stringify({
+        usage: live.summary || null,
+        note: 'Per-model usage is not exposed by the live provider API; use /api/scoreboard rows for the live-ranked table.',
+        fetchedAt: live.fetchedAt,
+      }));
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: e.message }));
