@@ -1,0 +1,32 @@
+name: pages-snapshot-guard
+on:
+  push:
+    paths: ['docs/index.html', 'docs/.nojekyll']
+  pull_request:
+    paths: ['docs/index.html', 'docs/.nojekyll']
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Frozen snapshot must not fetch the live API
+        run: |
+          test -f docs/.nojekyll
+          test -f docs/index.html
+          grep -q 'SNAPSHOT_DATA' docs/index.html
+          if grep -q "fetch('/api/scoreboard" docs/index.html; then
+            echo 'docs/index.html still fetches /api/scoreboard; rebuild with build-snapshot.mjs' >&2
+            exit 1
+          fi
+          node -e '
+            const fs = require("fs");
+            const t = fs.readFileSync("docs/index.html", "utf8");
+            const start = t.indexOf("const SNAPSHOT_DATA=");
+            const end = t.indexOf(";\nlet ROWS=");
+            if (start < 0 || end < 0) { console.error("SNAPSHOT_DATA markers missing"); process.exit(1); }
+            const d = JSON.parse(t.slice(start + "const SNAPSHOT_DATA=".length, end));
+            if (!Array.isArray(d.rows) || d.rows.length < 1) {
+              console.error("rows empty"); process.exit(1);
+            }
+            console.log("ok rows=" + d.rows.length + " fetchedAt=" + d.fetchedAt);
+          '

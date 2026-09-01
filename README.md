@@ -57,6 +57,26 @@ Restart after a backend code change (`server.mjs` / `scoreboard.mjs` /
 launchctl kickstart -k gui/$(id -u)/com.hermes.model-scoreboard
 ```
 
+## Public site (GitHub Pages)
+
+Root `index.html` is the live board. GitHub Pages publishes `docs/`, a frozen
+inline snapshot. Live pushes to `index.html` do not update the public URL.
+
+- Live: `http://127.0.0.1:8347`
+- Public: `https://anthonycho-ux.github.io/model-scoreboard/` (Pages source:
+  `main` / `docs`)
+- Refresh public:
+
+```bash
+node build-snapshot.mjs
+git add docs/index.html
+git commit -m 'Refresh public snapshot'
+git push
+```
+
+Do not copy root `index.html` onto `docs/index.html`. The builder inlines
+`SNAPSHOT_DATA` and strips the live `/api/scoreboard` fetch.
+
 ## Data sources (all live, no local cache)
 
 - Nous Portal API: catalog, artificial_analysis benchmarks, list prices
@@ -85,4 +105,4 @@ launchctl kickstart -k gui/$(id -u)/com.hermes.model-scoreboard
   No score is invented; a missing benchmark is a visible dash.
 - Apply writes `defaultModel` with provider `nous-portal`, the retired lane;
   future switches should target `provider: command-code`.
-- Screenshot in `docs/scoreboard.png` reflects the current UI.
+- Screenshot in `scoreboard.png` reflects the current UI.
