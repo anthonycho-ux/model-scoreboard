@@ -44,7 +44,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .fron svg{display:block;width:100%;height:auto}
 .fron text{font-family:ui-monospace,Menlo,monospace;font-size:10px;fill:var(--muted)}
 .fron .pt{fill:var(--muted);opacity:.55}
-.fron .pt-me{fill:var(--amber)}
 .fron .pt-up{fill:var(--blue)}
 .fron .f-ln{fill:none;stroke:var(--green);stroke-width:2;opacity:.9}
 .fron .tl{fill:var(--text);font-weight:600}
@@ -59,9 +58,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;color:var(--muted);font-weight:600;padding:7px 8px;border-bottom:1px solid var(--line);font-size:10px;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none}
 th.n,td.n{text-align:right;font-family:ui-monospace,Menlo,monospace}
 td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
-tr.me td{background:rgba(216,176,106,.08)}
 .tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:9px;margin-left:6px;vertical-align:middle}
-.tag.me{background:var(--amber);color:#14171c}
 .tag.dl{background:rgba(216,176,106,.16);color:#d8b06a;border:1px solid rgba(216,176,106,.45)}
 .tag.cc{background:var(--blue);color:#fff}
 .tag.pr-n{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
@@ -258,7 +255,7 @@ const T={
   week:{en:'wk @ real mix',ko:'주간(실사용)'},
   ratio:{en:'score/cost',ko:'지능/비용'},
   pFoot:{en:'prev floor hides scores below the last refresh minimum · dotted score = benchmark noise band (±2), rank not separable · composite = equal-weight mean of intel/coding/agentic · ±2 band is an assumed spread, not measured',ko:'prev floor: 직전 갱신 최저점 미만 숨김 · 점선 지능 = 벤치마크 노이즈 구간(±2), 서열 구분 불가 · 복합점수 = 지능/코딩/에이전틱 동일가중 평균 · ±2 구간은 가정치, 실측 아님'},
-  paretoLbl:{en:'Score vs cost — log x, Pareto frontier (green). Amber = your model, blue = the pick.',ko:'지능 vs 비용 — 로그 축, 파레토 프론티어(초록). 노랑 = 현재 모델, 파랑 = 추천.'},
+  paretoLbl:{en:'Score vs cost — log x, Pareto frontier (green). Blue = the pick.',ko:'지능 vs 비용 — 로그 축, 파레토 프론티어(초록). 파랑 = 추천.'},
   yours:{en:'yours',ko:'내 모델'},
   meName:{en:'current model',ko:'현재 모델'},
   meDot:{en:'you',ko:'현재'},
@@ -360,8 +357,8 @@ function renderPareto(){
   let pts='';
   for(const m of live){
     const x=X(m.cost).toFixed(1),y=Y(m.score).toFixed(1);
-    const cls=m.id===ME?'pt-me':(prompt&&m.id===prompt.id?'pt-up':'pt');
-    pts+='<circle class="'+cls+'" data-id="'+m.id+'" cx="'+x+'" cy="'+y+'" r="'+(m.id===ME?5:3.5)+'"/>';
+    const cls=prompt&&m.id===prompt.id?'pt-up':'pt';
+    pts+='<circle class="'+cls+'" data-id="'+m.id+'" cx="'+x+'" cy="'+y+'" r="3.5"/>';
   }
   let xt='';
   for(const c of ticks){
@@ -374,7 +371,7 @@ function renderPareto(){
     const y=Y(s).toFixed(1);
     yts+='<text x="'+(PL-6)+'" y="'+(y+3)+'" text-anchor="end">'+s+'</text>';
   }
-  const meLab=me?'<text class="tl" x="'+(X(me.cost)+8)+'" y="'+(Y(me.score)-6)+'">'+T.meDot[LANG]+'</text>':'';
+  const meLab='';
   const upLab=prompt?'<text class="tl" x="'+(X(prompt.cost)+8)+'" y="'+(Y(prompt.score)-6)+'">'+shortId(prompt.id)+'</text>':'';
   el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'"><line x1="'+PL+'" y1="'+(H-PB)+'" x2="'+(W-PR)+'" y2="'+(H-PB)+'" stroke="#2a2f3a"/><line x1="'+PL+'" y1="'+PT+'" x2="'+PL+'" y2="'+(H-PB)+'" stroke="#2a2f3a"/>'+xt+yts+'<path class="f-ln" d="'+d+'"/>'+pts+meLab+upLab+'</svg>';
   el.querySelectorAll('svg circle').forEach(c=>c.addEventListener('click',()=>{
@@ -517,11 +514,10 @@ function render(){
   $('#cnt').textContent=fill(T.cnt[lang],{n:String(rows.length),t:String(ROWS.length)})+(floorOn?' · 49+':'');
   let h='';
   rows.forEach(r=>{
-    const isMe=r.id===ME;
     const onCc=srcs(r).includes('commandcode');
-    const role=isMe?T.rNow[lang]:(rec&&r.id===rec.id?T.rUp[lang]:(p.strongest&&r.id===p.strongest.id?T.rTop[lang]:''));
+    const role=rec&&r.id===rec.id?T.rUp[lang]:(p.strongest&&r.id===p.strongest.id?T.rTop[lang]:'');
     const ratioText=r.ratio==null?'—':Math.round(r.ratio).toLocaleString();
-    const tags=(isMe?'<span class="tag me">'+T.yours[lang]+'</span>':'')+(r.free?'<span class="tag free">free</span>':'')+(isBatch(r)?'<span class="tag">batch</span>':'');
+    const tags=(r.free?'<span class="tag free">free</span>':'')+(isBatch(r)?'<span class="tag">batch</span>':'');
     const band=Math.round((r.score||0)/2);
     const tied=(bands[band]||[]).length>=2;
     const dlTag=r.deal?'<span class="tag dl" title="'+fill(T.dealTip[lang],{l:r.deal.label,e:r.deal.expiry||'∞'})+' ">'+r.deal.label+(r.deal.expiry?(' ~'+r.deal.expiry.slice(5).replace('-','/')):' ∞')+'</span>':'';
@@ -553,7 +549,7 @@ function render(){
       cards+='<div class="card'+(cP!=null&&nP<cP?' best':'')+'"><div class="chd"><span class="prov-n">'+T.pNous[lang]+'</span>'+(cP!=null&&nP<cP?'<span class="best-tag2">'+T.eBest[lang]+'</span>':'')+'</div><div class="crow"><span>'+T.eEff[lang]+'</span><b class="eff" style="color:'+(cP!=null&&nP<cP?'var(--green)':'')+'">'+fmtMoney(nP)+' / req</b></div>'+(r.deal?'<div class="crow"><span>'+T.eDeal[lang]+'</span><b>none</b></div>':'')+(nWeek!=null?'<div class="crow"><span>'+T.eWeek[lang]+'</span><b>'+fmtMoney(nWeek)+'</b></div>':'')+'</div>';
     }
     if(!cards){cards='<div class="card"><div class="chd"><span class="prov-n">'+T.eNoBench[lang]+'</span></div></div>';}
-    h+='<tr class="'+(isMe?'me':'')+'" data-id="'+r.id+'" onclick="selRow(this);toggleExpand(this)"><td>'+role+short(r.id)+dlTag+tags+'</td><td class="n'+(tied?' tie':'')+'" title="'+(tied?T.tieTip[lang]:'')+'">'+(r.score!=null?r.score.toFixed(1):'—')+'</td><td>'+bestCell+'</td><td class="n">'+fmtMoney(r.cost)+'</td><td class="n cb" style="'+weekStyle+'">'+(r.weekCost==null?'—':fmtMoney(r.weekCost))+'</td><td class="n cb" style="'+ratioStyle+'">'+ratioText+'</td></tr><tr class="exp-row" data-exp="'+r.id+'"><td colspan="6"><div class="cmp">'+cards+'</div></td></tr>';
+    h+='<tr data-id="'+r.id+'" onclick="selRow(this);toggleExpand(this)"><td>'+role+short(r.id)+dlTag+tags+'</td><td class="n'+(tied?' tie':'')+'" title="'+(tied?T.tieTip[lang]:'')+'">'+(r.score!=null?r.score.toFixed(1):'—')+'</td><td>'+bestCell+'</td><td class="n">'+fmtMoney(r.cost)+'</td><td class="n cb" style="'+weekStyle+'">'+(r.weekCost==null?'—':fmtMoney(r.weekCost))+'</td><td class="n cb" style="'+ratioStyle+'">'+ratioText+'</td></tr><tr class="exp-row" data-exp="'+r.id+'"><td colspan="6"><div class="cmp">'+cards+'</div></td></tr>';
   });
   $('#body').innerHTML=h;
   document.querySelectorAll('#body tr[data-id]').forEach(tr=>{
@@ -591,8 +587,7 @@ function renderMatrix(){
     } else if(nPrice!=null){best='<span class="marg" style="color:var(--muted)">'+T.mOnlyNous[lang]+'</span>';marg='—';}
     else if(ccPrice!=null){best='<span class="marg amber">'+T.mOnlyCc[lang]+'</span>';marg='<span class="marg amber">'+T.mNew[lang]+'</span>';}
     else {best='<span class="marg" style="color:var(--muted)">'+T.mScores[lang]+'</span>';marg='—';}
-    const isMe=r.id===ME;
-    p.push('<tr class="'+(isMe?'me':'')+'" data-id="'+r.id+'"><td><b>'+short(r.id)+'</b>'+(r.free?'<span class="tag free">free</span>':'')+(isMe?'<span class="tag me">'+T.yours[lang]+'</span>':'')+'</td><td class="n">'+(r.score!=null?r.score.toFixed(1):'—')+'</td><td>'+nCell+'</td><td>'+cCell+'</td><td>'+best+'</td><td>'+marg+'</td></tr>');
+    p.push('<tr data-id="'+r.id+'"><td><b>'+short(r.id)+'</b>'+(r.free?'<span class="tag free">free</span>':'')+'</td><td class="n">'+(r.score!=null?r.score.toFixed(1):'—')+'</td><td>'+nCell+'</td><td>'+cCell+'</td><td>'+best+'</td><td>'+marg+'</td></tr>');
   }
   $('#mbody').innerHTML=p.join('');
 }
