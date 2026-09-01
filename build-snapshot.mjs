@@ -17,13 +17,7 @@ const OUT = path.join(DOCS, 'index.html');
 const LIVE_FETCH = `    const c=$('#cached').value,f=$('#fresh').value,o=$('#out').value,m=$('#metric').value;
     const r=await fetch('/api/scoreboard?cached='+c+'&fresh='+f+'&out='+o+'&metric='+m);
     if(!r.ok)throw 0;
-    const d=await r.json();ROWS=d.rows||[];CHANGED_AT=d.lastChangedAt||d.fetchedAt||null;
-    try{
-      const mr=await fetch('/api/models?cached='+c+'&fresh='+f+'&out='+o);
-      if(mr.ok){const md=await mr.json();NOUS_CAT={};(md.models||[]).forEach(x=>{const k=normId(x.id);if(x.pricing)NOUS_CAT[k]=x.pricing;});}
-      const pr=await fetch('/api/providers');
-      if(pr.ok){const pd=await pr.json();CC_LIST=(pd.providers&&pd.providers[0]&&pd.providers[0].models||[]).map(m=>m.model||m.id||'');}
-    }catch(e){}`;
+    const d=await r.json();ROWS=d.rows||[];CHANGED_AT=d.lastChangedAt||d.fetchedAt||null;`;
 
 const SNAP_LOAD = `    const c=$('#cached').value,f=$('#fresh').value,o=$('#out').value,m=$('#metric').value;
     const d=SNAPSHOT_DATA;

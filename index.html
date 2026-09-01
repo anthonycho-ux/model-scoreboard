@@ -95,6 +95,7 @@ td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
 .exp-row{display:none}
 tr.open+tr.exp-row{display:table-row}
 .exp-row td{background:var(--bg);padding:12px 14px;white-space:normal;border-bottom:1px solid var(--line)}
+.cmk{font-size:.62em;color:var(--muted);margin-left:1px}
 .cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:680px}
 .card{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:11px 13px}
 .card.best{outline:1px solid rgba(111,220,155,.6);outline-offset:-1px}
@@ -122,6 +123,7 @@ tr.open+tr.exp-row{display:table-row}
   <div>
     <div class="name" id="v-name"></div>
     <div class="why" id="v-why"></div>
+    <div class="why" id="v-comp" style="font-size:12px;color:var(--muted)"></div>
   </div>
   <div class="num"><div class="big" id="v-score"></div><div class="unit" id="v-unit"></div></div>
 </div>
@@ -131,7 +133,6 @@ tr.open+tr.exp-row{display:table-row}
 <div class="changed" id="changed" style="display:none"><div class="ch-hd" id="ch-hd"></div><div class="ch-body" id="ch-body"></div><div class="ch-src" id="ch-src"></div></div>
 <div class="bar">
   <button type="button" class="chip on" id="c-floor">49+</button>
-  <button type="button" class="chip on" id="c-prev" title="hide models scoring below the lowest score of the previous data refresh">prev floor</button>
   <input type="text" id="q" placeholder="">
   <div class="tgl" id="view-tgl"><button class="on" data-v="table" id="v-table">table</button><button data-v="matrix" id="v-matrix">matrix</button></div>
   <button type="button" class="more-t" id="more-t"></button>
@@ -172,14 +173,12 @@ tr.open+tr.exp-row{display:table-row}
 <script>
 const $=s=>document.querySelector(s);
 const ME='z-ai/glm-5.3-flash';
-const FLOOR=49;
+const FLOOR_MODEL='deepseek/deepseek-v4-flash-0731';
+const FLOOR_MODEL_ALT='deepseek/deepseek-v4-flash-0731:batch';
+let FLOOR=56.4; // fills from the live 0731 score on load; 56.4 is the 0731 historical baseline
 let ROWS=[],LANG='en',sortKey='ratio',floorOn=true,CHANGED_AT=null,SHAPE_BASE=null,VIEW='table',NOUS_CAT={},CC_LIST=[];
 const SNAP_KEY='sb.changed.v1';
 const CH_SRC_LINKS=[['Nous catalog','https://inference-api.nousresearch.com/v1/models'],['CC API','https://api.commandcode.ai/provider/v1/models'],['CC pricing','https://commandcode.ai/docs/resources/pricing-limits']];
-const PREV_FLOOR_KEY='sb.prevFloor';
-let PREV_FLOOR={};
-try{PREV_FLOOR=JSON.parse(localStorage.getItem(PREV_FLOOR_KEY)||'{}')||{};}catch(e){PREV_FLOOR={};}
-let prevOn=true;
 const fmtCost=n=>'$'+n.toFixed(4); // per-request cost column: uniform 4 decimals
 const fmtWeek=n=>'$'+n.toFixed(2); // weekly cost column: uniform 2 decimals
 const short=id=>(id||'').split('/').pop().replace(/:batch$/,'');
@@ -249,19 +248,20 @@ const T={
   eHint:{en:'click a row for the per-provider compare',ko:'행을 클릭하면 공급자별 비교'},
   pNames:{en:['Nous','Command Code'],ko:['누스','커맨드 코드']},
   tieTip:{en:'within benchmark noise (~2 pts) of another model — rank not separable',ko:'벤치마크 노이즈(~2점) 구간 — 서열 구분 불가'},
-  score:{en:'score',ko:'지능'},
+  score:{en:'intel',ko:'지능'},
+  scoreC:{en:'composite ᶜ',ko:'복합지수 ᶜ'},
+  compNote:{en:'Score shown is the composite index: the equal-weight mean of the Artificial Analysis intelligence, coding, and agentic indices. Pick a single metric in the bar above to see one index alone.',ko:'표시 점수는 복합지수입니다: Artificial Analysis 지능·코딩·에이전틱 지수의 동일가중 평균. 위 선택 메뉴에서 단일 지표를 고르면 그 지수만 보여줍니다.'},
   delta:{en:'Δ vs yours',ko:'내 모델 대비'},
   cost:{en:'cost',ko:'요청'},
   week:{en:'wk @ real mix',ko:'주간(실사용)'},
   ratio:{en:'score/cost',ko:'지능/비용'},
-  pFoot:{en:'prev floor hides scores below the last refresh minimum · dotted score = benchmark noise band (±2), rank not separable · composite = equal-weight mean of intel/coding/agentic · ±2 band is an assumed spread, not measured',ko:'prev floor: 직전 갱신 최저점 미만 숨김 · 점선 지능 = 벤치마크 노이즈 구간(±2), 서열 구분 불가 · 복합점수 = 지능/코딩/에이전틱 동일가중 평균 · ±2 구간은 가정치, 실측 아님'},
   paretoLbl:{en:'Score vs cost — log x, Pareto frontier (green). Blue = the pick.',ko:'지능 vs 비용 — 로그 축, 파레토 프론티어(초록). 파랑 = 추천.'},
   yours:{en:'yours',ko:'내 모델'},
   meName:{en:'current model',ko:'현재 모델'},
   meDot:{en:'you',ko:'현재'},
   hidden:{en:'{n} models below 49 hidden',ko:'49 미만 {n}개 숨김'},
   cnt:{en:'{n} of {t} scored',ko:'평가 {t}개 중 {n}개'},
-  foot:{en:'Batch (offline) models are left out of this chat ranking. All data is pulled live from the providers (Nous API, Command Code API + official pricing page, plus the Artificial Analysis leaderboard for CC-only model scores) on every refresh - no local cache. wk @ real mix = live weekly request volume at this model\'s today list prices, default token mix (80k cache / 4k fresh / 4k out). Deal badge = live CC deal or GOAT credit multiplier, expired deals auto-drop.',ko:'묶음 처리(batch) 모델은 대화용 순위에서 뺐습니다. 모든 데이터는 새로고침 시 공급자(누스 API, 커맨드 코드 API + 공식 가격 페이지, CC 전용 모델 지수는 Artificial Analysis 리더보드)에서 직접 가져옵니다. 로컬 캐시 없음. 주간(실사용) = 실시간 주간 요청량 × 오늘 정가, 기본 토큰 구성(캐시 80k/신규 4k/출력 4k). 딜 배지 = 실시간 CC 딜 또는 GOAT 크레딧 배수, 만료 딜 자동 제외.'},
+  foot:{en:'Batch (offline) models are left out of this chat ranking. All data is pulled live from the providers (Nous API, Command Code API + official pricing page, plus the Artificial Analysis leaderboard for CC-only model scores) on every refresh - no local cache. wk @ real mix = live weekly request volume at this model\'s today list prices, default token mix (80k cache / 4k fresh / 4k out). Deal badge = live CC deal or GOAT credit multiplier, expired deals auto-drop. Composite score = equal-weight mean of the AA intelligence, coding, and agentic indices; the ᶜ mark on a score means composite.',ko:'묶음 처리(batch) 모델은 대화용 순위에서 뺐습니다. 모든 데이터는 새로고침 시 공급자(누스 API, 커맨드 코드 API + 공식 가격 페이지, CC 전용 모델 지수는 Artificial Analysis 리더보드)에서 직접 가져옵니다. 로컬 캐시 없음. 주간(실사용) = 실시간 주간 요청량 × 오늘 정가, 기본 토큰 구성(캐시 80k/신규 4k/출력 4k). 딜 배지 = 실시간 CC 딜 또는 GOAT 크레딧 배수, 만료 딜 자동 제외. 복합 점수 = AA 지능·코딩·에이전틱 지수의 동일가중 평균, 점수 옆 ᶜ 표시는 복합지수라는 뜻입니다.'},
   stamp:{en:'Changed',ko:'변경'},
   stampTitle:{en:'Last provider change: new model, price, or deal. Polling does not move this date.',ko:'공급자가 모델·가격·딜을 바꾼 마지막 시각. 단순 조회로는 날짜가 안 바뀝니다.'},
   rNow:{en:'now',ko:'지금'},
@@ -272,34 +272,23 @@ const T={
   whyRec:{en:'Smarter model, weekly cost gap under $1 at your real mix. Score +{s}.',ko:'더 똑똑한 모델, 실사용 주간 비용 차이 $1 미만. 지능 +{s}.'}
 };
 function fill(t,v){return t.replace('{n}',v.n||'').replace('{c}',v.c||'').replace('{t}',v.t||'').replace('{s}',v.s||'').replace('{a}',v.a??'').replace('{b}',v.b??'');}
-function providerOn(){return [...document.querySelectorAll('.chip[data-p].on')].map(b=>b.dataset.p);}
 function filtered(){
   const q=($('#q').value||'').toLowerCase();
   const rv=document.querySelector('#reason-tgl button.on').dataset.v;
-  const sel=providerOn();
   return ROWS.filter(m=>{
     if(q&&!(m.id||'').toLowerCase().includes(q)&&!(m.name||'').toLowerCase().includes(q))return false;
     if(rv==='yes'&&!m.reasoning)return false;
     if(rv==='no'&&m.reasoning)return false;
-    if(sel.length){if(!sel.some(s=>srcs(m).includes(s)))return false;}
-    if(floorOn&&(m.score||0)<FLOOR&&!m.ccOnly)return false;
-    if(prevOn&&PREV_FLOOR[$('#metric').value]!=null&&(m.score||0)<PREV_FLOOR[$('#metric').value]&&!m.ccOnly)return false;
+    if(floorOn&&m.score!=null&&m.score<FLOOR)return false;
     if(isBatch(m))return false;
     return true;
   });
 }
 function livePool(rows){return rows.filter(m=>!isBatch(m));}
 function picks(rows){
-  const live=livePool(rows);
-  const meAll=ROWS.find(r=>r.id===ME);
-  const meIn=rows.find(r=>r.id===ME);
-  const me=meAll;
-  const base=me?me.score:0;
-  const smarter=live.filter(m=>m.id!==ME&&m.score>base).sort((a,b)=>a.cost-b.cost);
-  const upgrade=smarter.find(m=>m.score>=base+4)||smarter[0]||null;
-  const strongest=[...live].sort((a,b)=>b.score-a.score)[0]||null;
-  const cheaperSmarter=smarter.some(m=>me&&m.cost<me.cost);
-  return {me,meIn,upgrade,strongest,keep:!cheaperSmarter,hidden:ROWS.length-rows.length};
+  const me=ROWS.find(r=>r.id===ME);
+  const strongest=[...rows].sort((a,b)=>b.score-a.score)[0]||null;
+  return {me,strongest};
 }
 function recommendation(live,me){
   if(!me)return null;
@@ -413,6 +402,9 @@ async function load(){
     const r=await fetch('/api/scoreboard?cached='+c+'&fresh='+f+'&out='+o+'&metric='+m);
     if(!r.ok)throw 0;
     const d=await r.json();ROWS=d.rows||[];CHANGED_AT=d.lastChangedAt||d.fetchedAt||null;
+    let ds=ROWS.find(r=>r.id===FLOOR_MODEL);
+    if((!ds||ds.score==null)&&ROWS.some(r=>r.id===FLOOR_MODEL_ALT))ds=ROWS.find(r=>r.id===FLOOR_MODEL_ALT);
+    if(ds&&ds.score!=null)FLOOR=Math.round(ds.score*10)/10;
     try{
       const mr=await fetch('/api/models?cached='+c+'&fresh='+f+'&out='+o);
       if(mr.ok){const md=await mr.json();NOUS_CAT={};(md.models||[]).forEach(x=>{const k=normId(x.id);if(x.pricing)NOUS_CAT[k]=x.pricing;});}
@@ -426,13 +418,6 @@ async function load(){
         const c=avg('score');
         SHAPE_BASE=[avg('intelligence')-c,avg('coding')-c,avg('agentic')-c];
       } else SHAPE_BASE=null;
-    }
-    if(prevOn&&!($('#q').value||'').trim()){
-      const frows=filtered().filter(x=>!x.ccOnly);
-      if(frows.length){
-        PREV_FLOOR[$('#metric').value]=Math.min(...frows.map(x=>x.score||0));
-        try{localStorage.setItem(PREV_FLOOR_KEY,JSON.stringify(PREV_FLOOR));}catch(e){}
-      }
     }
     render();
     renderPareto();
@@ -467,26 +452,26 @@ function resetToDefaults(){
   $('#q').value='';
   sortKey='ratio';
   floorOn=true;$('#c-floor').classList.add('on');
-  prevOn=true;$('#c-prev').classList.add('on');
   document.querySelectorAll('#reason-tgl button').forEach(b=>b.classList.toggle('on',b.dataset.v==='all'));
-  document.querySelectorAll('.chip[data-p]').forEach(b=>b.classList.add('on'));
   LANG='en';$('#l-en').classList.add('on');$('#l-ko').classList.remove('on');
   load();
 }
 function render(){
   paintStamp();
+  $('#c-floor').textContent=(floorOn?FLOOR+'+':'all');
   const lang=LANG;
   $('#q').placeholder=T.q[lang];
   $('#more-t').textContent=T.more[lang];
   $('#lbl-metric').textContent=T.metric[lang];
   $('#metric').title=($('#metric').value==='composite')?T.metricTitle[lang]:T.metricTitle1[lang];
   $('#th-model').textContent=T.model[lang];
-  $('#th-score').textContent=T.score[lang];
+  $('#th-score').textContent=($('#metric').value==='composite')?T.scoreC[lang]:T.score[lang];
   $('#th-best').textContent=T.best[lang];
   $('#th-cost').textContent=T.cost[lang];
   $('#th-week').textContent=T.week[lang];
   $('#th-ratio').textContent=T.ratio[lang];
-  $('#foot').textContent=T.foot[lang]+(prevOn?' · '+T.pFoot[lang]:'');
+  $('#foot').textContent=T.foot[lang];
+  $('#v-comp').textContent=($('#metric').value==='composite')?T.compNote[lang]:'';
   const rows=filtered().slice();
   rows.sort((a,b)=>{
     if(sortKey==='ratio'){const ar=a.ratio==null?-1:a.ratio,br=b.ratio==null?-1:b.ratio;return br-ar;}
@@ -515,7 +500,7 @@ function render(){
     hero.style.display='none';
   }
 
-  $('#cnt').textContent=fill(T.cnt[lang],{n:String(rows.length),t:String(ROWS.length)})+(floorOn?' · 49+':'');
+  $('#cnt').textContent=fill(T.cnt[lang],{n:String(rows.length),t:String(ROWS.length)})+(floorOn?' · '+FLOOR+'+':'');
   let h='';
   rows.forEach(r=>{
     const onCc=srcs(r).includes('commandcode');
@@ -553,7 +538,7 @@ function render(){
       cards+='<div class="card'+(cP!=null&&nP<cP?' best':'')+'"><div class="chd"><span class="prov-n">'+T.pNous[lang]+'</span>'+(cP!=null&&nP<cP?'<span class="best-tag2">'+T.eBest[lang]+'</span>':'')+'</div><div class="crow"><span>'+T.eEff[lang]+'</span><b class="eff" style="color:'+(cP!=null&&nP<cP?'var(--green)':'')+'">'+fmtCost(nP)+' / req</b></div>'+(r.deal?'<div class="crow"><span>'+T.eDeal[lang]+'</span><b>none</b></div>':'')+(nWeek!=null?'<div class="crow"><span>'+T.eWeek[lang]+'</span><b>'+fmtWeek(nWeek)+'</b></div>':'')+'</div>';
     }
     if(!cards){cards='<div class="card"><div class="chd"><span class="prov-n">'+T.eNoBench[lang]+'</span></div></div>';}
-    h+='<tr data-id="'+r.id+'" onclick="selRow(this);toggleExpand(this)"><td>'+role+short(r.id)+dlTag+tags+'</td><td class="n'+(tied?' tie':'')+'" title="'+(tied?T.tieTip[lang]:'')+'">'+(r.score!=null?r.score.toFixed(1):'—')+'</td><td>'+bestCell+'</td><td class="n">'+(r.cost!=null?fmtCost(r.cost):'—')+'</td><td class="n cb" style="'+weekStyle+'">'+(r.weekCost==null?'—':fmtWeek(r.weekCost))+'</td><td class="n cb" style="'+ratioStyle+'">'+ratioText+'</td></tr><tr class="exp-row" data-exp="'+r.id+'"><td colspan="6"><div class="cmp">'+cards+'</div></td></tr>';
+    h+='<tr data-id="'+r.id+'" onclick="selRow(this);toggleExpand(this)"><td>'+role+short(r.id)+dlTag+tags+'</td><td class="n'+(tied?' tie':'')+'" title="'+(tied?T.tieTip[lang]:'')+'">'+(r.score!=null?r.score.toFixed(1)+($('#metric').value==='composite'?'<sup class="cmk">ᶜ</sup>':''):'—')+'</td><td>'+bestCell+'</td><td class="n">'+(r.cost!=null?fmtCost(r.cost):'—')+'</td><td class="n cb" style="'+weekStyle+'">'+(r.weekCost==null?'—':fmtWeek(r.weekCost))+'</td><td class="n cb" style="'+ratioStyle+'">'+ratioText+'</td></tr><tr class="exp-row" data-exp="'+r.id+'"><td colspan="6"><div class="cmp">'+cards+'</div></td></tr>';
   });
   $('#body').innerHTML=h;
   document.querySelectorAll('#body tr[data-id]').forEach(tr=>{
@@ -567,7 +552,7 @@ function render(){
 function renderMatrix(){
   const lang=LANG;
   $('#mx-model').textContent=T.mModel[lang];
-  $('#mx-score').textContent=T.mScore[lang];
+  $('#mx-score').textContent=($('#metric').value==='composite')?T.scoreC[lang]:T.mScore[lang];
   $('#mx-nous').textContent=T.mNous[lang];
   $('#mx-cc').textContent=T.mCc[lang]+'<span style="display:none">'+T.mSrc[lang]+'</span>';
   $('#mx-best').textContent=T.mBest[lang];
@@ -591,7 +576,7 @@ function renderMatrix(){
     } else if(nPrice!=null){best='<span class="marg" style="color:var(--muted)">'+T.mOnlyNous[lang]+'</span>';marg='—';}
     else if(ccPrice!=null){best='<span class="marg amber">'+T.mOnlyCc[lang]+'</span>';marg='<span class="marg amber">'+T.mNew[lang]+'</span>';}
     else {best='<span class="marg" style="color:var(--muted)">'+T.mScores[lang]+'</span>';marg='—';}
-    p.push('<tr data-id="'+r.id+'"><td><b>'+short(r.id)+'</b>'+(r.free?'<span class="tag free">free</span>':'')+'</td><td class="n">'+(r.score!=null?r.score.toFixed(1):'—')+'</td><td>'+nCell+'</td><td>'+cCell+'</td><td>'+best+'</td><td>'+marg+'</td></tr>');
+    p.push('<tr data-id="'+r.id+'"><td><b>'+short(r.id)+'</b>'+(r.free?'<span class="tag free">free</span>':'')+'</td><td class="n">'+(r.score!=null?r.score.toFixed(1)+($('#metric').value==='composite'?'<sup class="cmk">ᶜ</sup>':''):'—')+'</td><td>'+nCell+'</td><td>'+cCell+'</td><td>'+best+'</td><td>'+marg+'</td></tr>');
   }
   $('#mbody').innerHTML=p.join('');
 }
@@ -656,9 +641,7 @@ $('#fresh').addEventListener('input',()=>{$('#fresh-v').textContent=Math.round($
 $('#out').addEventListener('input',()=>{$('#out-v').textContent=Math.round($('#out').value)+'k';load();});
 $('#q').addEventListener('input',render);
 document.querySelectorAll('#reason-tgl button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#reason-tgl button').forEach(x=>x.classList.remove('on'));b.classList.add('on');render();}));
-document.querySelectorAll('.chip[data-p]').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('on');render();}));
 $('#c-floor').addEventListener('click',()=>{floorOn=!floorOn;$('#c-floor').classList.toggle('on',floorOn);render();});
-$('#c-prev').addEventListener('click',()=>{prevOn=!prevOn;$('#c-prev').classList.toggle('on',prevOn);render();});
 $('#more-t').addEventListener('click',()=>$('#more').classList.toggle('on'));
 $('#reset').addEventListener('click',resetToDefaults);
 document.querySelectorAll('#view-tgl button').forEach(b=>b.addEventListener('click',()=>{
